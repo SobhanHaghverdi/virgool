@@ -1,15 +1,17 @@
 import { join } from "path";
 import { Module } from "@nestjs/common";
 import { AppService } from "./app.service";
+import UserModule from "../user/user.module";
 import { ConfigModule } from "@nestjs/config";
-import { AppController } from "./app.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AppController } from "./app.controller";
 import { TypeormConfig } from "src/config/typeorm.config";
 
 @Module({
   providers: [AppService],
   controllers: [AppController],
   imports: [
+    UserModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,
       inject: [TypeormConfig],
@@ -20,4 +22,6 @@ import { TypeormConfig } from "src/config/typeorm.config";
     }),
   ],
 })
-export class AppModule {}
+class AppModule {}
+
+export default AppModule;
