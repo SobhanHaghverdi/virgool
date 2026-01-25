@@ -14,7 +14,7 @@ class AuthController {
   }
 
   @Post("user-existence")
-  @ApiConsumes(SwaggerConsume.Json, SwaggerConsume.UrlEncoded)
+  @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
   public checkUserExistence(@Body() dto: AuthDto) {
     return this.authService.checkUserExistence(dto);
   }

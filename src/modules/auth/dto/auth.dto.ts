@@ -6,11 +6,11 @@ import { IsEnum, IsNotEmpty, IsString, Length } from "class-validator";
 class AuthDto {
   @ApiProperty({ enum: AuthType })
   @IsEnum(AuthType)
-  type: string;
+  type: AuthType;
 
   @ApiProperty({ enum: AuthMethod })
   @IsEnum(AuthMethod)
-  method: string;
+  method: AuthMethod;
 
   @ApiProperty({ maxLength: 100 })
   @Length(3, 100)
