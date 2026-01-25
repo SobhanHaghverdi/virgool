@@ -1,7 +1,7 @@
 enum AuthMethod {
-  Phone = "phone",
   Email = "email",
   UserName = "userName",
+  PhoneNumber = "phoneNumber",
 }
 
 export default AuthMethod;

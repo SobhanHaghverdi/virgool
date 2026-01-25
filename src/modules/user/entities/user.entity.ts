@@ -13,8 +13,13 @@ import {
 
 @Entity(EntityName.User)
 class UserEntity extends BaseEntity {
-  @Column("varchar", { name: "user_name", length: 150, unique: true })
-  public userName: string;
+  @Column("varchar", {
+    name: "user_name",
+    length: 150,
+    unique: true,
+    nullable: true,
+  })
+  public userName?: string;
 
   @Column("varchar", { length: 150, unique: true, nullable: true })
   public email?: string;

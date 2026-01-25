@@ -16,8 +16,8 @@ class OtpEntity extends BaseEntity {
   @Column("varchar", { length: 5, unique: true })
   public code: string;
 
-  @Column("timestamp without time zone", { name: "expires_at", nullable: true })
-  public expiresAt?: Date;
+  @Column("timestamp without time zone", { name: "expires_at" })
+  public expiresAt: Date;
 
   @Column("int", { name: "user_id" })
   public userId: number;
