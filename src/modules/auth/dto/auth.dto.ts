@@ -19,4 +19,12 @@ class AuthDto {
   value: string;
 }
 
-export { AuthDto };
+class CheckOtpDto {
+  @ApiProperty({ minLength: 5, maxLength: 5 })
+  @Length(5, 5)
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+}
+
+export { AuthDto, CheckOtpDto };

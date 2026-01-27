@@ -1,8 +1,10 @@
 import { randomInt } from "crypto";
 import { Repository } from "typeorm";
-import { AuthDto } from "./dto/auth.dto";
+import { AuthDto, CheckOtpDto } from "./dto/auth.dto";
 import AuthType from "./enums/type.enum";
+import TokenService from "./token.service";
 import AuthMethod from "./enums/method.enum";
+import { AuthResponse } from "./types/response";
 import { InjectRepository } from "@nestjs/typeorm";
 import OtpEntity from "../user/entities/otp.entity";
 import UserEntity from "../user/entities/user.entity";
@@ -15,10 +17,17 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
+  Scope,
+  Inject,
 } from "@nestjs/common";
+import type { Request } from "express";
+import { REQUEST } from "@nestjs/core";
+import { CookieKey } from "src/common/enums/cookie.enum";
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 class AuthService {
+  private readonly request: Request;
+  private readonly tokenService: TokenService;
   private readonly otpRepository: Repository<OtpEntity>;
   private readonly userRepository: Repository<UserEntity>;
   private readonly userProfileRepository: Repository<UserProfileEntity>;
@@ -28,29 +37,37 @@ class AuthService {
     @InjectRepository(UserProfileEntity)
     userProfileRepository: Repository<UserProfileEntity>,
     @InjectRepository(OtpEntity)
-    otpRepository: Repository<OtpEntity>
+    otpRepository: Repository<OtpEntity>,
+    tokenService: TokenService,
+    @Inject(REQUEST) request: Request
   ) {
+    this.request = request;
+    this.tokenService = tokenService;
     this.otpRepository = otpRepository;
     this.userRepository = userRepository;
     this.userProfileRepository = userProfileRepository;
   }
 
-  public async checkUserExistence(dto: AuthDto) {
+  public async checkUserExistence(dto: AuthDto): Promise<AuthResponse> {
     const { type, method, value } = dto;
+
+    let result: AuthResponse;
 
     switch (type) {
       case AuthType.Login:
-        return this.login(method, value);
+        result = await this.login(method, value);
+        return result;
 
       case AuthType.Register:
-        return this.register(method, value);
+        result = await this.register(method, value);
+        return result;
 
       default:
         throw new UnauthorizedException();
     }
   }
 
-  public async login(method: AuthMethod, value: string) {
+  public async login(method: AuthMethod, value: string): Promise<AuthResponse> {
     const validValue = this.validateValue(method, value);
 
     let user: UserEntity | null = await this.getExistingUser(
@@ -60,11 +77,15 @@ class AuthService {
 
     if (!user) throw new UnauthorizedException(AuthMessage.NotFoundUser);
     const otp = await this.saveOtp(user.id);
+    const token = this.tokenService.createOtpToken({ userId: user.id });
 
-    return otp.code;
+    return { code: otp.code, token };
   }
 
-  public async register(method: AuthMethod, value: string) {
+  public async register(
+    method: AuthMethod,
+    value: string
+  ): Promise<AuthResponse> {
     const validValue = this.validateValue(method, value);
 
     let user: UserEntity | null = await this.getExistingUser(
@@ -86,10 +107,30 @@ class AuthService {
 
     const otp = await this.saveOtp(user.id);
 
-    return otp.code;
+    const token = this.tokenService.createOtpToken({ userId: user.id });
+
+    return { code: otp.code, token };
   }
 
-  public async checkOtp() {}
+  public async checkOtp(dto: CheckOtpDto) {
+    const token = this.request.cookies?.[CookieKey.Otp];
+    if (!token) throw new UnauthorizedException(AuthMessage.InvalidOtp);
+
+    const { userId } = this.tokenService.verifyOtpToken(token);
+    const otp = await this.otpRepository.findOneBy({ userId });
+
+    if (!otp) throw new UnauthorizedException(AuthMessage.InvalidOtp);
+
+    if (otp.expiresAt < new Date()) {
+      throw new UnauthorizedException(AuthMessage.ExpiredOtp);
+    }
+
+    if (otp.code !== dto.code) {
+      throw new UnauthorizedException(AuthMessage.InvalidOtp);
+    }
+
+    return this.tokenService.createAccessToken({ userId });
+  }
 
   public async saveOtp(userId: number) {
     const code = randomInt(10000, 99999).toString();
