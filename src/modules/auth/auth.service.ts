@@ -39,7 +39,7 @@ class AuthService {
     @InjectRepository(OtpEntity)
     otpRepository: Repository<OtpEntity>,
     tokenService: TokenService,
-    @Inject(REQUEST) request: Request
+    @Inject(REQUEST) request: Request,
   ) {
     this.request = request;
     this.tokenService = tokenService;
@@ -72,7 +72,7 @@ class AuthService {
 
     let user: UserEntity | null = await this.getExistingUser(
       method,
-      validValue
+      validValue,
     );
 
     if (!user) throw new UnauthorizedException(AuthMessage.NotFoundUser);
@@ -84,13 +84,13 @@ class AuthService {
 
   public async register(
     method: AuthMethod,
-    value: string
+    value: string,
   ): Promise<AuthResponse> {
     const validValue = this.validateValue(method, value);
 
     let user: UserEntity | null = await this.getExistingUser(
       method,
-      validValue
+      validValue,
     );
 
     if (user) throw new ConflictException(AuthMessage.AlreadyExistsUser);
@@ -176,6 +176,14 @@ class AuthService {
       throw new BadRequestException(BadRequestMessage.InvalidAuthType);
     }
 
+    return user;
+  }
+
+  public async validateAccessToken(token: string) {
+    const { userId } = this.tokenService.verifyAccessToken(token);
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (!user) throw new UnauthorizedException("Please login");
     return user;
   }
 
