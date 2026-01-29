@@ -3,6 +3,7 @@ import AuthService from "./auth.service";
 import AuthGuard from "./guards/auth.guard";
 import { AuthDto, CheckOtpDto } from "./dto/auth.dto";
 import { CookieKey } from "src/common/enums/cookie.enum";
+import { ApiHeader } from "src/common/enums/header.enum";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
 
@@ -45,8 +46,8 @@ class AuthController {
   }
 
   @Get("check-auth")
-  @ApiBearerAuth("Authorization")
   @UseGuards(AuthGuard)
+  @ApiBearerAuth(ApiHeader.AUTHORIZATION)
   public async checkAuth(@Req() request: Request) {
     return request.user;
   }
