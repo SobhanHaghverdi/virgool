@@ -6,11 +6,13 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
-    "start": "nest start",
-    "start:prod": "node dist/main",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch"
+    "prebuild": "npm run version:gen",
+    "build": "npm run version:gen && nest build",
+    "start": "npm run version:gen && nest start",
+    "version:gen": "node scripts/generate-version.js",
+    "start:prod": "npm run version:gen && node dist/main",
+    "start:dev": "npm run version:gen && nest start --watch",
+    "start:debug": "npm run version:gen && nest start --debug --watch"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
