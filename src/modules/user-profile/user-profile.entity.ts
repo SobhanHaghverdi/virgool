@@ -24,7 +24,7 @@ class UserProfileEntity extends BaseEntity {
   })
   public backgroundImageName?: string;
 
-  @Column("time without time zone", { name: "birth_date", nullable: true })
+  @Column("timestamp with time zone", { name: "birth_date", nullable: true })
   public birthDate?: Date;
 
   @Column("varchar", { name: "linkedin_profile", nullable: true, length: 150 })

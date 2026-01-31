@@ -9,7 +9,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import OtpEntity from "../user/entities/otp.entity";
 import UserEntity from "../user/entities/user.entity";
 import { isEmail, isMobilePhone } from "class-validator";
-import UserProfileEntity from "../user/entities/user-profile.entity";
 import { AuthMessage, BadRequestMessage } from "src/common/enums/message.enum";
 
 import {
@@ -30,12 +29,9 @@ class AuthService {
   private readonly tokenService: TokenService;
   private readonly otpRepository: Repository<OtpEntity>;
   private readonly userRepository: Repository<UserEntity>;
-  private readonly userProfileRepository: Repository<UserProfileEntity>;
 
   constructor(
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
-    @InjectRepository(UserProfileEntity)
-    userProfileRepository: Repository<UserProfileEntity>,
     @InjectRepository(OtpEntity)
     otpRepository: Repository<OtpEntity>,
     tokenService: TokenService,
@@ -45,7 +41,6 @@ class AuthService {
     this.tokenService = tokenService;
     this.otpRepository = otpRepository;
     this.userRepository = userRepository;
-    this.userProfileRepository = userProfileRepository;
   }
 
   public async checkUserExistence(dto: AuthDto): Promise<AuthResponse> {
