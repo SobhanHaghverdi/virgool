@@ -1,5 +1,6 @@
 import { join } from "path";
 import { Module } from "@nestjs/common";
+import OtpModule from "../otp/otp.module";
 import UserModule from "../user/user.module";
 import AuthModule from "../auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
@@ -9,8 +10,9 @@ import UserProfileModule from "../user-profile/user-profile.module";
 
 @Module({
   imports: [
-    AuthModule,
+    OtpModule,
     UserModule,
+    AuthModule,
     UserProfileModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,

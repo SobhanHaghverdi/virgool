@@ -3,10 +3,10 @@ import { Repository } from "typeorm";
 import { AuthDto, CheckOtpDto } from "./dto/auth.dto";
 import AuthType from "./enums/type.enum";
 import TokenService from "./token.service";
+import OtpService from "../otp/otp.service";
 import AuthMethod from "./enums/method.enum";
 import { AuthResponse } from "./types/response";
 import { InjectRepository } from "@nestjs/typeorm";
-import OtpEntity from "../user/entities/otp.entity";
 import UserEntity from "../user/entities/user.entity";
 import { isEmail, isMobilePhone } from "class-validator";
 import { AuthMessage, BadRequestMessage } from "src/common/enums/message.enum";
@@ -26,27 +26,26 @@ import { CookieKey } from "src/common/enums/cookie.enum";
 @Injectable({ scope: Scope.REQUEST })
 class AuthService {
   private readonly request: Request;
+  private readonly otpService: OtpService;
   private readonly tokenService: TokenService;
-  private readonly otpRepository: Repository<OtpEntity>;
   private readonly userRepository: Repository<UserEntity>;
 
   constructor(
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
-    @InjectRepository(OtpEntity)
-    otpRepository: Repository<OtpEntity>,
+    otpService: OtpService,
     tokenService: TokenService,
     @Inject(REQUEST) request: Request,
   ) {
     this.request = request;
+    this.otpService = otpService;
     this.tokenService = tokenService;
-    this.otpRepository = otpRepository;
     this.userRepository = userRepository;
   }
 
-  public async checkUserExistence(dto: AuthDto): Promise<AuthResponse> {
+  public async checkUserExistence(dto: AuthDto) {
     const { type, method, value } = dto;
 
-    let result: AuthResponse;
+    let result;
 
     switch (type) {
       case AuthType.Login:
@@ -62,7 +61,7 @@ class AuthService {
     }
   }
 
-  public async login(method: AuthMethod, value: string): Promise<AuthResponse> {
+  public async login(method: AuthMethod, value: string) {
     const validValue = this.validateValue(method, value);
 
     let user: UserEntity | null = await this.getExistingUser(
@@ -71,16 +70,13 @@ class AuthService {
     );
 
     if (!user) throw new UnauthorizedException(AuthMessage.NotFoundUser);
-    const otp = await this.saveOtp(user.id);
-    const token = this.tokenService.createOtpToken({ userId: user.id });
+    // const otp = await this.saveOtp(user.id);
+    // const token = this.tokenService.createOtpToken({ userId: user.id });
 
-    return { code: otp.code, token };
+    // return { code: otp.code, token };
   }
 
-  public async register(
-    method: AuthMethod,
-    value: string,
-  ): Promise<AuthResponse> {
+  public async register(method: AuthMethod, value: string) {
     const validValue = this.validateValue(method, value);
 
     let user: UserEntity | null = await this.getExistingUser(
@@ -100,11 +96,11 @@ class AuthService {
     user.userName = `m_${user.id}`;
     await this.userRepository.save(user);
 
-    const otp = await this.saveOtp(user.id);
+    // const otp = await this.saveOtp(user.id);
 
-    const token = this.tokenService.createOtpToken({ userId: user.id });
+    // const token = this.tokenService.createOtpToken({ userId: user.id });
 
-    return { code: otp.code, token };
+    // return { code: otp.code, token };
   }
 
   public async checkOtp(dto: CheckOtpDto) {
@@ -112,7 +108,7 @@ class AuthService {
     if (!token) throw new UnauthorizedException(AuthMessage.InvalidOtp);
 
     const { userId } = this.tokenService.verifyOtpToken(token);
-    const otp = await this.otpRepository.findOneBy({ userId });
+    const otp = await this.otpService.getByUserId(userId);
 
     if (!otp) throw new UnauthorizedException(AuthMessage.InvalidOtp);
 
@@ -127,30 +123,30 @@ class AuthService {
     return this.tokenService.createAccessToken({ userId });
   }
 
-  public async saveOtp(userId: number) {
-    const code = randomInt(10000, 99999).toString();
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 2);
+  // public async saveOtp(userId: number) {
+  //   const code = randomInt(10000, 99999).toString();
+  //   const expiresAt = new Date(Date.now() + 1000 * 60 * 2);
 
-    let otp = await this.otpRepository.findOneBy({ userId });
-    let doesOtpExists = false;
+  //   let otp = await this.otpService.getByUserId(userId);
+  //   let doesOtpExists = false;
 
-    if (otp) {
-      doesOtpExists = true;
+  //   if (otp) {
+  //     doesOtpExists = true;
 
-      otp.code = code;
-      otp.expiresAt = expiresAt;
-    } else {
-      otp = this.otpRepository.create({ code, expiresAt, userId });
-    }
+  //     otp.code = code;
+  //     otp.expiresAt = expiresAt;
+  //   } else {
+  //     otp = this.otpRepository.create({ code, expiresAt, userId });
+  //   }
 
-    otp = await this.otpRepository.save(otp);
+  //   otp = await this.otpRepository.save(otp);
 
-    if (!doesOtpExists) {
-      await this.userRepository.update({ id: userId }, { otpId: otp.id });
-    }
+  //   if (!doesOtpExists) {
+  //     await this.userRepository.update({ id: userId }, { otpId: otp.id });
+  //   }
 
-    return otp;
-  }
+  //   return otp;
+  // }
 
   public async getExistingUser(method: AuthMethod, value: string) {
     let user: UserEntity | null;

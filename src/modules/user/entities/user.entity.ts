@@ -1,4 +1,4 @@
-import OtpEntity from "./otp.entity";
+import OtpEntity from "src/modules/otp/otp.entity";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 
