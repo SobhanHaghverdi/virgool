@@ -1,6 +1,7 @@
 import { randomInt } from "crypto";
 import { Repository } from "typeorm";
 import OtpEntity from "./otp.entity";
+import { OtpMessage } from "./otp.message";
 import type { CreateOtpDto } from "./dto/otp.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ConflictException, Injectable } from "@nestjs/common";
@@ -19,9 +20,7 @@ class OtpService extends BaseService<OtpEntity> {
       userId: dto.userId,
     });
 
-    if (doesOtpExists) {
-      throw new ConflictException("کد یکبار مصرف قبلا ثبت شده است.");
-    }
+    if (doesOtpExists) throw new ConflictException(OtpMessage.Duplicate);
 
     const code = randomInt(10000, 99999).toString();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 2); //* Two minutes

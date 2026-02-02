@@ -1,4 +1,5 @@
 import OtpService from "../otp/otp.service";
+import { AuthMessage } from "./auth.message";
 import type { AuthDto } from "./dto/auth.dto";
 import UserService from "../user/user.service";
 import { AuthMethod } from "./enums/auth.enum";
@@ -23,7 +24,7 @@ class AuthService {
       authMethod !== AuthMethod.Email &&
       authMethod !== AuthMethod.PhoneNumber
     ) {
-      throw new BadRequestException("شماره موبایل یا ایمیل صحیح نمی باشد");
+      throw new BadRequestException(AuthMessage.InvalidEmailOrPhoneNumber);
     }
 
     const user = await this.userService.create({ [authMethod]: identifier });

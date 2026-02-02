@@ -10,6 +10,12 @@ import {
   ApiCreatedResponse,
 } from "@nestjs/swagger";
 
+import {
+  AuthMessage,
+  AuthSwaggerResponseMessage,
+  AuthSwaggerOperationMessage,
+} from "./auth.message";
+
 @ApiTags("Auth")
 @Controller("auth")
 class AuthController {
@@ -20,12 +26,12 @@ class AuthController {
   }
 
   @Post("register")
-  @ApiOperation({ summary: "Register user" })
   @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  @ApiCreatedResponse({ description: "User registered successfully" })
+  @ApiOperation({ summary: AuthSwaggerOperationMessage.Registration })
+  @ApiCreatedResponse({ description: AuthSwaggerResponseMessage.Registered })
   public async register(@Body() dto: AuthDto) {
     await this.authService.register(dto);
-    return { message: "حساب کاربری با موفقیت ایجاد شد" };
+    return { message: AuthMessage.Registered };
   }
 }
 

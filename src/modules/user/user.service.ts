@@ -1,4 +1,5 @@
 import { Repository } from "typeorm";
+import { UserMessage } from "./user.message";
 import UserEntity from "./entities/user.entity";
 import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -23,7 +24,7 @@ class UserService extends BaseService<UserEntity> {
     const identifier = phoneNumber || email;
 
     if (!identifier) {
-      throw new BadRequestException("شماره موبایل یا ایمیل الزامی می باشد");
+      throw new BadRequestException(UserMessage.RequiredEmailOrPhoneNumber);
     }
 
     const authMethod = Object.entries(dto).find(
@@ -34,9 +35,7 @@ class UserService extends BaseService<UserEntity> {
       [authMethod!]: identifier,
     });
 
-    if (doesUserExists) {
-      throw new ConflictException("کاربری با این مشخصات قبلا ثبت نام کرده است");
-    }
+    if (doesUserExists) throw new ConflictException(UserMessage.Duplicate);
 
     const user = await this.createEntity(dto);
 
