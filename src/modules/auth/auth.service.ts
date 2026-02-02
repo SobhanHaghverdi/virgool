@@ -31,7 +31,7 @@ class AuthService {
 
     //* Save otp id in user record
     user.otpId = otp.id;
-    return await this.userService.save(user);
+    return await this.userService.saveChanges(user);
   }
 
   public async login(dto: AuthDto) {}

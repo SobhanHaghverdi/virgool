@@ -2,6 +2,7 @@ import { Repository } from "typeorm";
 import UserEntity from "./entities/user.entity";
 import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { BaseService } from "src/common/abstracts/base.service";
 
 import {
   Injectable,
@@ -10,13 +11,11 @@ import {
 } from "@nestjs/common";
 
 @Injectable()
-class UserService {
-  private readonly userRepository: Repository<UserEntity>;
-
+class UserService extends BaseService<UserEntity> {
   constructor(
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
   ) {
-    this.userRepository = userRepository;
+    super(userRepository);
   }
 
   public async create(dto: CreateUserDto) {
@@ -31,7 +30,7 @@ class UserService {
       (value) => value[1] === identifier,
     )?.[0];
 
-    const doesUserExists = await this.userRepository.existsBy({
+    const doesUserExists = await this.repository.existsBy({
       [authMethod!]: identifier,
     });
 
@@ -39,16 +38,11 @@ class UserService {
       throw new ConflictException("کاربری با این مشخصات قبلا ثبت نام کرده است");
     }
 
-    let user = this.userRepository.create(dto);
-    user = await this.save(user);
+    const user = await this.createEntity(dto);
 
     //* Generate user name
     user.userName = `m_${user.id}`;
-    return await this.save(user);
-  }
-
-  public async save(entity: UserEntity) {
-    return await this.userRepository.save(entity);
+    return await this.saveChanges(user);
   }
 }
 
