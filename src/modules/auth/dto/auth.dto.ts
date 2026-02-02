@@ -7,7 +7,12 @@ class AuthDto {
   @IsNotEmpty()
   @Length(3, 150)
   @Transform(({ value }) => value.trim().toLowerCase())
-  @ApiProperty({ minLength: 3, maxLength: 150, default: "" })
+  @ApiProperty({
+    default: "",
+    minLength: 3,
+    maxLength: 150,
+    description: "Can be email or phone number",
+  })
   identifier: string; //* Can be either user name, email or phone number
 }
 
