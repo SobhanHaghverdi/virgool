@@ -4,4 +4,4 @@ enum AuthMethod {
   PhoneNumber = "phoneNumber",
 }
 
-export default AuthMethod;
+export { AuthMethod };

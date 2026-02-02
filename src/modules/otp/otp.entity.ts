@@ -24,11 +24,8 @@ class OtpEntity extends BaseEntity {
   @Column("int", { default: 0 })
   public attempts: number;
 
-  @Column("timestamp without time zone", {
-    name: "last_sent_at",
-    nullable: true,
-  })
-  public lastSentAt?: Date;
+  @CreateDateColumn({ name: "last_sent_at" })
+  public lastSentAt: Date;
 
   @Column("timestamp without time zone", {
     name: "last_failed_at",

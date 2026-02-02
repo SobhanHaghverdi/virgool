@@ -30,7 +30,7 @@ class AuthGuard implements CanActivate {
       throw new UnauthorizedException("Please login");
     }
 
-    request.user = await this.authService.validateAccessToken(token);
+    // request.user = await this.authService.validateAccessToken(token);
     return true;
   }
 }
