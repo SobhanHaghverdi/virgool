@@ -1,8 +1,8 @@
-import { Repository } from "typeorm";
 import { UserMessage } from "./user.message";
 import UserEntity from "./entities/user.entity";
 import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
@@ -19,7 +19,8 @@ class UserService extends BaseService<UserEntity> {
     super(userRepository);
   }
 
-  public async create(dto: CreateUserDto) {
+  public async create(dto: CreateUserDto, entityManager?: EntityManager) {
+    const manager = entityManager ?? this.repository.manager;
     const { email = undefined, phoneNumber = undefined } = dto;
     const identifier = phoneNumber || email;
 
@@ -31,17 +32,17 @@ class UserService extends BaseService<UserEntity> {
       (value) => value[1] === identifier,
     )?.[0];
 
-    const doesUserExists = await this.repository.existsBy({
+    const doesUserExists = await manager.existsBy(UserEntity, {
       [authMethod!]: identifier,
     });
 
     if (doesUserExists) throw new ConflictException(UserMessage.Duplicate);
 
-    const user = await this.createEntity(dto);
+    const user = await this.createEntity(dto, manager);
 
     //* Generate user name
     user.userName = `m_${user.id}`;
-    return await this.saveChanges(user);
+    return await this.saveChanges(user, manager);
   }
 }
 

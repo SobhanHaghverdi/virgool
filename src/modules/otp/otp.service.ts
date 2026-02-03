@@ -1,9 +1,9 @@
 import { randomInt } from "crypto";
-import { Repository } from "typeorm";
 import OtpEntity from "./otp.entity";
 import { OtpMessage } from "./otp.message";
 import type { CreateOtpDto } from "./dto/otp.dto";
 import { InjectRepository } from "@nestjs/typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { ConflictException, Injectable } from "@nestjs/common";
 import { BaseService } from "src/common/abstracts/base.service";
 
@@ -15,8 +15,9 @@ class OtpService extends BaseService<OtpEntity> {
     super(otpRepository);
   }
 
-  public async create(dto: CreateOtpDto) {
-    const doesOtpExists = await this.repository.existsBy({
+  public async create(dto: CreateOtpDto, entityManager?: EntityManager) {
+    const manager = entityManager ?? this.repository.manager;
+    const doesOtpExists = await manager.existsBy(OtpEntity, {
       userId: dto.userId,
     });
 
@@ -25,7 +26,7 @@ class OtpService extends BaseService<OtpEntity> {
     const code = randomInt(10000, 99999).toString();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 2); //* Two minutes
 
-    return await this.createEntity({ ...dto, code, expiresAt });
+    return await this.createEntity({ ...dto, code, expiresAt }, manager);
   }
 }
 
