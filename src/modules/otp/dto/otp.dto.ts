@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty } from "class-validator";
+import { IsInt, IsNotEmpty, IsBoolean } from "class-validator";
 
 class CreateOtpDto {
   @IsInt()
@@ -6,4 +6,9 @@ class CreateOtpDto {
   userId: number;
 }
 
-export { CreateOtpDto };
+class UpdateOtpDto {
+  @IsBoolean()
+  isNewRequest: boolean = false;
+}
+
+export { CreateOtpDto, UpdateOtpDto };

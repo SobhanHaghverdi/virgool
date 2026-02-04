@@ -3,6 +3,7 @@ import UserEntity from "./entities/user.entity";
 import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
+import { AuthMethod } from "../auth/enums/auth.enum";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
@@ -17,6 +18,10 @@ class UserService extends BaseService<UserEntity> {
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
   ) {
     super(userRepository);
+  }
+
+  public async getByAuthMethod(authMethod: AuthMethod, identifier: string) {
+    return await this.repository.findOneBy({ [authMethod]: identifier });
   }
 
   public async create(dto: CreateUserDto, entityManager?: EntityManager) {

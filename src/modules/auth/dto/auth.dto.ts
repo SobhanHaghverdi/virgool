@@ -11,7 +11,7 @@ class AuthDto {
     default: "",
     minLength: 3,
     maxLength: 150,
-    description: "Can be email or phone number",
+    description: "Can be user name, email or phone number",
   })
   identifier: string; //* Can be either user name, email or phone number
 }

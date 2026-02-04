@@ -1,14 +1,14 @@
 enum AuthMessage {
-  Registered = "حساب کاربری با موفقیت ایجاد شد.",
-  InvalidEmailOrPhoneNumber = "شماره موبایل یا ایمیل صحیح نمی باشد.",
+  SendOtp = "کد یکبار مصرف برای شما ارسال شد.",
+  InvalidEmailOrPhoneNumberOrUserName = "شماره موبایل، ایمیل یا نام کاربری صحیح نمی باشد.",
 }
 
 enum AuthSwaggerResponseMessage {
-  Registered = "User registered successfully",
+  SendOtp = "Otp has sent successfully",
 }
 
 enum AuthSwaggerOperationMessage {
-  Registration = "User registration",
+  Authentication = "User authentication",
 }
 
 export { AuthMessage, AuthSwaggerOperationMessage, AuthSwaggerResponseMessage };

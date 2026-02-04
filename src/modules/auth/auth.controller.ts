@@ -7,7 +7,7 @@ import {
   ApiTags,
   ApiConsumes,
   ApiOperation,
-  ApiCreatedResponse,
+  ApiOkResponse,
 } from "@nestjs/swagger";
 
 import {
@@ -25,13 +25,13 @@ class AuthController {
     this.authService = authService;
   }
 
-  @Post("register")
+  @Post("authenticate")
   @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  @ApiOperation({ summary: AuthSwaggerOperationMessage.Registration })
-  @ApiCreatedResponse({ description: AuthSwaggerResponseMessage.Registered })
-  public async register(@Body() dto: AuthDto) {
-    await this.authService.register(dto);
-    return { message: AuthMessage.Registered };
+  @ApiOperation({ summary: AuthSwaggerOperationMessage.Authentication })
+  @ApiOkResponse({ description: AuthSwaggerResponseMessage.SendOtp })
+  public async authenticate(@Body() dto: AuthDto) {
+    await this.authService.authenticate(dto);
+    return { message: AuthMessage.SendOtp };
   }
 }
 
