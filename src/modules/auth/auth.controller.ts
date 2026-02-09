@@ -1,6 +1,7 @@
 import AuthService from "./auth.service";
 import { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
 import { Post, Body, Controller } from "@nestjs/common";
+import ResponseBuilder from "src/common/utils/response-builder";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 
 import {
@@ -31,7 +32,7 @@ class AuthController {
   @ApiOkResponse({ description: AuthSwaggerResponseMessage.SendOtp })
   public async authenticate(@Body() dto: AuthDto) {
     const user = await this.authService.authenticate(dto);
-    return { data: user.id, message: AuthMessage.SendOtp };
+    return ResponseBuilder.ok(user.id, AuthMessage.SendOtp);
   }
 
   @Post("verify-otp")
@@ -40,7 +41,7 @@ class AuthController {
   @ApiOkResponse({ description: AuthSwaggerResponseMessage.Login })
   public async verifyOtp(@Body() dto: VerifyOtpDto) {
     const token = await this.authService.verifyOtp(dto);
-    return { data: token, message: AuthMessage.Login };
+    return ResponseBuilder.ok(token, AuthMessage.Login);
   }
 }
 
