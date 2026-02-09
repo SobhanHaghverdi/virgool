@@ -1,22 +1,33 @@
+import { JwtService } from "@nestjs/jwt";
 import OtpService from "../otp/otp.service";
 import { AuthMessage } from "./auth.message";
-import type { AuthDto } from "./dto/auth.dto";
 import UserService from "../user/user.service";
-import { AuthMethod } from "./enums/auth.enum";
+import UserEntity from "../user/entities/user.entity";
+import DateHelper from "src/common/utils/date-helper";
+import { OtpValidation } from "../otp/enums/otp.enum";
 import { isEmail, isMobilePhone } from "class-validator";
+import type { AccessTokenPayload } from "./types/auth.type";
+import type { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
+import { AuthMethod, JwtExpiration } from "./enums/auth.enum";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 
 @Injectable()
 class AuthService {
   private readonly otpService: OtpService;
+  private readonly jwtService: JwtService;
   private readonly userService: UserService;
 
-  constructor(otpService: OtpService, userService: UserService) {
+  constructor(
+    otpService: OtpService,
+    jwtService: JwtService,
+    userService: UserService,
+  ) {
     this.otpService = otpService;
+    this.jwtService = jwtService;
     this.userService = userService;
   }
 
-  public async authenticate(dto: AuthDto) {
+  public async authenticate(dto: AuthDto): Promise<UserEntity> {
     const { identifier } = dto;
     const authMethod = this.detectIdentifierType(identifier);
 
@@ -30,6 +41,15 @@ class AuthService {
     const otp = await this.otpService.getByUserId(user.id);
 
     if (otp) {
+      const limitationDate = DateHelper.addMinute(
+        OtpValidation.ExpireDurationInMinute,
+        otp.lastSentAt,
+      );
+
+      if (limitationDate > new Date()) {
+        throw new UnauthorizedException(AuthMessage.SendOtpLimit);
+      }
+
       await this.otpService.update(otp.id, { isNewRequest: true });
     } else {
       await this.otpService.create({ userId: user.id });
@@ -38,7 +58,41 @@ class AuthService {
     return user;
   }
 
-  public async register(authMethod: AuthMethod, identifier: string) {
+  public async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+    const { code, userId } = dto;
+    const user = await this.userService.getById(userId);
+
+    if (!user || !user.otp) {
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
+    }
+
+    const otp = user.otp;
+
+    //* Validate
+    if (otp.expiresAt < new Date()) {
+      throw new UnauthorizedException(AuthMessage.ExpiredOtp);
+    }
+
+    if (otp.code !== code) {
+      await this.otpService.update(otp.id, { isCodeInvalid: true });
+      throw new UnauthorizedException(AuthMessage.InvalidOtp);
+    }
+
+    await this.otpService.update(otp.id, { verify: true });
+    return await this.generateAccessToken(user);
+  }
+
+  private async generateAccessToken(user: UserEntity) {
+    return await this.jwtService.signAsync<AccessTokenPayload>(
+      {
+        userId: user.id,
+        userName: user.userName,
+      },
+      { expiresIn: JwtExpiration.AccessToken },
+    );
+  }
+
+  private async register(authMethod: AuthMethod, identifier: string) {
     if (
       authMethod !== AuthMethod.Email &&
       authMethod !== AuthMethod.PhoneNumber

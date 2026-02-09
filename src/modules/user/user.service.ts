@@ -20,6 +20,13 @@ class UserService extends BaseService<UserEntity> {
     super(userRepository);
   }
 
+  public async getById(id: number) {
+    return await this.repository.findOne({
+      where: { id },
+      relations: { otp: true },
+    });
+  }
+
   public async getByAuthMethod(authMethod: AuthMethod, identifier: string) {
     return await this.repository.findOneBy({ [authMethod]: identifier });
   }

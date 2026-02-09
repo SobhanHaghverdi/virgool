@@ -21,9 +21,6 @@ class OtpEntity extends BaseEntity {
   @Column("int", { name: "user_id", unique: true })
   public userId: number;
 
-  @Column("int", { default: 0 })
-  public attempts: number;
-
   @CreateDateColumn({ name: "last_sent_at" })
   public lastSentAt: Date;
 

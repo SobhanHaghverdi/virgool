@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsBoolean } from "class-validator";
+import { IsInt, IsNotEmpty, IsBoolean, IsEmpty } from "class-validator";
 
 class CreateOtpDto {
   @IsInt()
@@ -7,8 +7,17 @@ class CreateOtpDto {
 }
 
 class UpdateOtpDto {
+  @IsEmpty()
   @IsBoolean()
-  isNewRequest: boolean = false;
+  isNewRequest?: boolean;
+
+  @IsEmpty()
+  @IsBoolean()
+  isCodeInvalid?: boolean;
+
+  @IsEmpty()
+  @IsBoolean()
+  verify?: boolean;
 }
 
 export { CreateOtpDto, UpdateOtpDto };
