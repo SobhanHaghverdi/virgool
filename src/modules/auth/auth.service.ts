@@ -82,6 +82,20 @@ class AuthService {
     return await this.generateAccessToken(user);
   }
 
+  public async verifyAccessToken(token: string) {
+    try {
+      const payload =
+        await this.jwtService.verifyAsync<AccessTokenPayload>(token);
+
+      const user = await this.userService.getById(payload?.userId);
+      if (!user) throw new UnauthorizedException(AuthMessage.Unauthorized);
+
+      return payload;
+    } catch {
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
+    }
+  }
+
   private async generateAccessToken(user: UserEntity) {
     return await this.jwtService.signAsync<AccessTokenPayload>(
       {
