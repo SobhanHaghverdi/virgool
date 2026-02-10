@@ -7,8 +7,8 @@ import JwtConfig from "src/config/jwt.config";
 import AuthController from "./auth.controller";
 
 @Module({
-  controllers: [AuthController],
   providers: [AuthService],
+  controllers: [AuthController],
   imports: [
     OtpModule,
     UserModule,
