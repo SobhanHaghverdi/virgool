@@ -1,24 +1,24 @@
-import type { Request, Response } from "express";
 import AuthService from "./auth.service";
-import AuthGuard from "./guards/auth.guard";
-import { AuthDto, CheckOtpDto } from "./dto/auth.dto";
-import { CookieKey } from "src/common/enums/cookie.enum";
-import { ApiHeader } from "src/common/enums/header.enum";
+import { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
+import { Post, Body, Controller } from "@nestjs/common";
+import ResponseBuilder from "src/common/utils/response-builder";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
-import { ApiBearerAuth, ApiConsumes, ApiTags } from "@nestjs/swagger";
 
 import {
-  Get,
-  Req,
-  Res,
-  Post,
-  Body,
-  UseGuards,
-  Controller,
-} from "@nestjs/common";
+  ApiTags,
+  ApiConsumes,
+  ApiOperation,
+  ApiOkResponse,
+} from "@nestjs/swagger";
 
-@Controller("auth")
+import {
+  AuthMessage,
+  AuthSwaggerResponseMessage,
+  AuthSwaggerOperationMessage,
+} from "./auth.message";
+
 @ApiTags("Auth")
+@Controller("auth")
 class AuthController {
   private readonly authService: AuthService;
 
@@ -26,30 +26,22 @@ class AuthController {
     this.authService = authService;
   }
 
-  @Post("user-existence")
+  @Post("authenticate")
   @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  public async checkUserExistence(@Body() dto: AuthDto, @Res() res: Response) {
-    const result = await this.authService.checkUserExistence(dto);
-
-    res.cookie(CookieKey.Otp, result.token, {
-      httpOnly: true,
-      expires: new Date(Date.now() + 60 * 1000 * 2),
-    });
-
-    res.json({ message: "", code: result.code });
+  @ApiOperation({ summary: AuthSwaggerOperationMessage.Authentication })
+  @ApiOkResponse({ description: AuthSwaggerResponseMessage.SendOtp })
+  public async authenticate(@Body() dto: AuthDto) {
+    const user = await this.authService.authenticate(dto);
+    return ResponseBuilder.ok(user.id, AuthMessage.SendOtp);
   }
 
-  @Post("check-otp")
+  @Post("verify-otp")
   @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  public async checkOtp(@Body() dto: CheckOtpDto) {
-    return await this.authService.checkOtp(dto);
-  }
-
-  @Get("check-auth")
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth(ApiHeader.AUTHORIZATION)
-  public async checkAuth(@Req() request: Request) {
-    return request.user;
+  @ApiOperation({ summary: AuthSwaggerOperationMessage.OtpVerification })
+  @ApiOkResponse({ description: AuthSwaggerResponseMessage.Login })
+  public async verifyOtp(@Body() dto: VerifyOtpDto) {
+    const token = await this.authService.verifyOtp(dto);
+    return ResponseBuilder.ok(token, AuthMessage.Login);
   }
 }
 

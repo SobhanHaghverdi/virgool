@@ -4,4 +4,8 @@ enum AuthMethod {
   PhoneNumber = "phoneNumber",
 }
 
-export default AuthMethod;
+enum JwtExpiration {
+  AccessToken = "30D",
+}
+
+export { AuthMethod, JwtExpiration };

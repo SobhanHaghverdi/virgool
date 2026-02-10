@@ -1,9 +1,9 @@
-import UserEntity from "src/modules/user/entities/user.entity";
+import type { AccessTokenPayload } from "src/modules/auth/types/auth.type";
 
 declare global {
   namespace Express {
     interface Request {
-      user?: UserEntity;
+      user?: AccessTokenPayload;
     }
   }
 }

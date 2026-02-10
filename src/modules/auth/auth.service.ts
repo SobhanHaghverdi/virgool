@@ -1,213 +1,134 @@
-import { randomInt } from "crypto";
-import { Repository } from "typeorm";
-import { AuthDto, CheckOtpDto } from "./dto/auth.dto";
-import AuthType from "./enums/type.enum";
-import TokenService from "./token.service";
-import AuthMethod from "./enums/method.enum";
-import { AuthResponse } from "./types/response";
-import { InjectRepository } from "@nestjs/typeorm";
-import OtpEntity from "../user/entities/otp.entity";
+import { JwtService } from "@nestjs/jwt";
+import OtpService from "../otp/otp.service";
+import { AuthMessage } from "./auth.message";
+import UserService from "../user/user.service";
 import UserEntity from "../user/entities/user.entity";
+import DateHelper from "src/common/utils/date-helper";
+import { OtpValidation } from "../otp/enums/otp.enum";
 import { isEmail, isMobilePhone } from "class-validator";
-import UserProfileEntity from "../user/entities/user-profile.entity";
-import { AuthMessage, BadRequestMessage } from "src/common/enums/message.enum";
+import type { AccessTokenPayload } from "./types/auth.type";
+import type { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
+import { AuthMethod, JwtExpiration } from "./enums/auth.enum";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 
-import {
-  Injectable,
-  ConflictException,
-  BadRequestException,
-  UnauthorizedException,
-  Scope,
-  Inject,
-} from "@nestjs/common";
-import type { Request } from "express";
-import { REQUEST } from "@nestjs/core";
-import { CookieKey } from "src/common/enums/cookie.enum";
-
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 class AuthService {
-  private readonly request: Request;
-  private readonly tokenService: TokenService;
-  private readonly otpRepository: Repository<OtpEntity>;
-  private readonly userRepository: Repository<UserEntity>;
-  private readonly userProfileRepository: Repository<UserProfileEntity>;
+  private readonly otpService: OtpService;
+  private readonly jwtService: JwtService;
+  private readonly userService: UserService;
 
   constructor(
-    @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
-    @InjectRepository(UserProfileEntity)
-    userProfileRepository: Repository<UserProfileEntity>,
-    @InjectRepository(OtpEntity)
-    otpRepository: Repository<OtpEntity>,
-    tokenService: TokenService,
-    @Inject(REQUEST) request: Request,
+    otpService: OtpService,
+    jwtService: JwtService,
+    userService: UserService,
   ) {
-    this.request = request;
-    this.tokenService = tokenService;
-    this.otpRepository = otpRepository;
-    this.userRepository = userRepository;
-    this.userProfileRepository = userProfileRepository;
+    this.otpService = otpService;
+    this.jwtService = jwtService;
+    this.userService = userService;
   }
 
-  public async checkUserExistence(dto: AuthDto): Promise<AuthResponse> {
-    const { type, method, value } = dto;
+  public async authenticate(dto: AuthDto): Promise<UserEntity> {
+    const { identifier } = dto;
+    const authMethod = this.detectIdentifierType(identifier);
 
-    let result: AuthResponse;
+    let user = await this.userService.getByAuthMethod(authMethod, identifier);
 
-    switch (type) {
-      case AuthType.Login:
-        result = await this.login(method, value);
-        return result;
-
-      case AuthType.Register:
-        result = await this.register(method, value);
-        return result;
-
-      default:
-        throw new UnauthorizedException();
-    }
-  }
-
-  public async login(method: AuthMethod, value: string): Promise<AuthResponse> {
-    const validValue = this.validateValue(method, value);
-
-    let user: UserEntity | null = await this.getExistingUser(
-      method,
-      validValue,
-    );
-
-    if (!user) throw new UnauthorizedException(AuthMessage.NotFoundUser);
-    const otp = await this.saveOtp(user.id);
-    const token = this.tokenService.createOtpToken({ userId: user.id });
-
-    return { code: otp.code, token };
-  }
-
-  public async register(
-    method: AuthMethod,
-    value: string,
-  ): Promise<AuthResponse> {
-    const validValue = this.validateValue(method, value);
-
-    let user: UserEntity | null = await this.getExistingUser(
-      method,
-      validValue,
-    );
-
-    if (user) throw new ConflictException(AuthMessage.AlreadyExistsUser);
-
-    if (method === AuthMethod.UserName) {
-      throw new BadRequestException(BadRequestMessage.InvalidAuthType);
+    if (!user) {
+      user = await this.register(authMethod, identifier);
     }
 
-    user = this.userRepository.create({ [method]: validValue });
-    user = await this.userRepository.save(user);
+    //* Create or update otp
+    const otp = await this.otpService.getByUserId(user.id);
 
-    user.userName = `m_${user.id}`;
-    await this.userRepository.save(user);
+    if (otp) {
+      const limitationDate = DateHelper.addMinute(
+        OtpValidation.ExpireDurationInMinute,
+        otp.lastSentAt,
+      );
 
-    const otp = await this.saveOtp(user.id);
+      if (limitationDate > new Date()) {
+        throw new UnauthorizedException(AuthMessage.SendOtpLimit);
+      }
 
-    const token = this.tokenService.createOtpToken({ userId: user.id });
+      await this.otpService.update(otp.id, { isNewRequest: true });
+    } else {
+      await this.otpService.create({ userId: user.id });
+    }
 
-    return { code: otp.code, token };
+    return user;
   }
 
-  public async checkOtp(dto: CheckOtpDto) {
-    const token = this.request.cookies?.[CookieKey.Otp];
-    if (!token) throw new UnauthorizedException(AuthMessage.InvalidOtp);
+  public async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+    const { code, userId } = dto;
+    const user = await this.userService.getById(userId);
 
-    const { userId } = this.tokenService.verifyOtpToken(token);
-    const otp = await this.otpRepository.findOneBy({ userId });
+    if (!user || !user.otp) {
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
+    }
 
-    if (!otp) throw new UnauthorizedException(AuthMessage.InvalidOtp);
+    const otp = user.otp;
 
+    //* Validate
     if (otp.expiresAt < new Date()) {
       throw new UnauthorizedException(AuthMessage.ExpiredOtp);
     }
 
-    if (otp.code !== dto.code) {
+    if (otp.code !== code) {
+      await this.otpService.update(otp.id, { isCodeInvalid: true });
       throw new UnauthorizedException(AuthMessage.InvalidOtp);
     }
 
-    return this.tokenService.createAccessToken({ userId });
+    await this.otpService.update(otp.id, { verify: true });
+    return await this.generateAccessToken(user);
   }
 
-  public async saveOtp(userId: number) {
-    const code = randomInt(10000, 99999).toString();
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 2);
+  public async verifyAccessToken(token: string) {
+    try {
+      const payload =
+        await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
-    let otp = await this.otpRepository.findOneBy({ userId });
-    let doesOtpExists = false;
+      const user = await this.userService.getById(payload?.userId);
+      if (!user) throw new UnauthorizedException(AuthMessage.Unauthorized);
 
-    if (otp) {
-      doesOtpExists = true;
-
-      otp.code = code;
-      otp.expiresAt = expiresAt;
-    } else {
-      otp = this.otpRepository.create({ code, expiresAt, userId });
+      return payload;
+    } catch {
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
     }
-
-    otp = await this.otpRepository.save(otp);
-
-    if (!doesOtpExists) {
-      await this.userRepository.update({ id: userId }, { otpId: otp.id });
-    }
-
-    return otp;
   }
 
-  public async getExistingUser(method: AuthMethod, value: string) {
-    let user: UserEntity | null;
-
-    if (method === AuthMethod.PhoneNumber) {
-      user = await this.userRepository.findOneBy({
-        phoneNumber: value.trim(),
-      });
-    } else if (method === AuthMethod.Email) {
-      user = await this.userRepository.findOneBy({
-        email: value.trim(),
-      });
-    } else if (method === AuthMethod.UserName) {
-      user = await this.userRepository.findOneBy({
-        userName: value.trim(),
-      });
-    } else {
-      throw new BadRequestException(BadRequestMessage.InvalidAuthType);
-    }
-
-    return user;
+  private async generateAccessToken(user: UserEntity) {
+    return await this.jwtService.signAsync<AccessTokenPayload>(
+      {
+        userId: user.id,
+        userName: user.userName,
+      },
+      { expiresIn: JwtExpiration.AccessToken },
+    );
   }
 
-  public async validateAccessToken(token: string) {
-    const { userId } = this.tokenService.verifyAccessToken(token);
-    const user = await this.userRepository.findOneBy({ id: userId });
-
-    if (!user) throw new UnauthorizedException("Please login");
-    return user;
-  }
-
-  private validateValue(method: AuthMethod, value: string) {
-    switch (method) {
-      case AuthMethod.UserName:
-        break;
-
-      case AuthMethod.Email: {
-        if (!isEmail(value)) throw new BadRequestException("Email is invalid");
-        break;
-      }
-
-      case AuthMethod.PhoneNumber:
-        if (!isMobilePhone(value, "fa-IR")) {
-          throw new BadRequestException("Phone number is invalid");
-        }
-        break;
-
-      default:
-        throw new BadRequestException("Invalid auth method");
+  private async register(authMethod: AuthMethod, identifier: string) {
+    if (
+      authMethod !== AuthMethod.Email &&
+      authMethod !== AuthMethod.PhoneNumber
+    ) {
+      throw new UnauthorizedException(
+        AuthMessage.InvalidEmailOrPhoneNumberOrUserName,
+      );
     }
 
-    return value;
+    return await this.userService.create({ [authMethod]: identifier });
+  }
+
+  private detectIdentifierType(identifier: string): AuthMethod {
+    if (isMobilePhone(identifier, "fa-IR")) {
+      return AuthMethod.PhoneNumber;
+    }
+
+    if (isEmail(identifier)) {
+      return AuthMethod.Email;
+    }
+
+    return AuthMethod.UserName;
   }
 }
 

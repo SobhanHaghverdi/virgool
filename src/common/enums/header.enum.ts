@@ -1,5 +1,5 @@
 enum ApiHeader {
-  AUTHORIZATION = "authorization",
+  Authorization = "authorization",
 }
 
 export { ApiHeader };

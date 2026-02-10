@@ -1,13 +1,15 @@
-import cookieParser from "cookie-parser";
 import { NestFactory } from "@nestjs/core";
 import AppModule from "./modules/app/app.module";
+import globalPipes from "./common/pipes/global.pipe";
 import configureSwagger from "./config/swagger.config";
+import ApiResponseInterceptor from "./common/interceptors/api-response.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const { PORT } = process.env;
 
-  const { PORT, COOKIE_SECRET_KEY } = process.env;
-  app.use(cookieParser(COOKIE_SECRET_KEY));
+  app.useGlobalPipes(...globalPipes);
+  app.useGlobalInterceptors(new ApiResponseInterceptor());
 
   configureSwagger(app);
 

@@ -1,8 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from "@nestjs/typeorm";
+
+import {
+  type TypeOrmModuleOptions,
+  TypeOrmOptionsFactory,
+} from "@nestjs/typeorm";
 
 @Injectable()
-export class TypeormConfig implements TypeOrmOptionsFactory {
+class TypeormConfig implements TypeOrmOptionsFactory {
   createTypeOrmOptions(connectionName?: string): TypeOrmModuleOptions {
     const {
       DATABASE_HOST,
@@ -10,6 +14,7 @@ export class TypeormConfig implements TypeOrmOptionsFactory {
       DATABASE_NAME,
       DATABASE_PASSWORD,
       DATABASE_USER_NAME,
+      DATABASE_MAX_POOL_SIZE,
     } = process.env;
 
     return {
@@ -21,6 +26,9 @@ export class TypeormConfig implements TypeOrmOptionsFactory {
       database: DATABASE_NAME,
       password: DATABASE_PASSWORD,
       username: DATABASE_USER_NAME,
+      poolSize: DATABASE_MAX_POOL_SIZE,
     };
   }
 }
+
+export default TypeormConfig;

@@ -4,7 +4,7 @@ import packageJson from "../package.json" with { type: "json" };
 
 const constants = `//* This file has been generated automatically based on package.json file
 enum App {
-  VERSION = "${packageJson.version}",
+  Version = "${packageJson.version}",
 }
 
 export { App };

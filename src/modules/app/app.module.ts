@@ -1,19 +1,19 @@
 import { join } from "path";
 import { Module } from "@nestjs/common";
-import { AppService } from "./app.service";
+import OtpModule from "../otp/otp.module";
 import UserModule from "../user/user.module";
 import AuthModule from "../auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { AppController } from "./app.controller";
-import { TypeormConfig } from "src/config/typeorm.config";
+import TypeormConfig from "src/config/typeorm.config";
+import UserProfileModule from "../user-profile/user-profile.module";
 
 @Module({
-  providers: [AppService],
-  controllers: [AppController],
   imports: [
-    AuthModule,
+    OtpModule,
     UserModule,
+    AuthModule,
+    UserProfileModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,
       inject: [TypeormConfig],

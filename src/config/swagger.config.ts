@@ -28,11 +28,11 @@ const globalResponses: ApiResponseOptions[] = [
 function configureSwagger(app: INestApplication): void {
   const document = new DocumentBuilder()
     .setTitle("Virgool")
-    .setVersion(App.VERSION)
+    .setVersion(App.Version)
     .setOpenAPIVersion("3.1.0")
     .addGlobalResponse(...globalResponses)
     .setDescription("Backend of virgool website")
-    .addBearerAuth(bearerAuthOptions, ApiHeader.AUTHORIZATION)
+    .addBearerAuth(bearerAuthOptions, ApiHeader.Authorization)
     .setContact(
       "Sobhan Haghverdi",
       "https://github.com/SobhanHaghverdi",

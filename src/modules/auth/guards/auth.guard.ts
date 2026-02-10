@@ -1,13 +1,14 @@
-import { Request } from "express";
+import { type Request } from "express";
 import { isJWT } from "class-validator";
+import AuthService from "../auth.service";
+import { AuthMessage } from "../auth.message";
 
 import {
+  Injectable,
   CanActivate,
   ExecutionContext,
-  Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import AuthService from "../auth.service";
 
 @Injectable()
 class AuthGuard implements CanActivate {
@@ -23,14 +24,17 @@ class AuthGuard implements CanActivate {
 
     const { authorization = undefined } = request.headers;
 
-    if (!authorization?.trim()) throw new UnauthorizedException("Please login");
+    if (!authorization?.trim()) {
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
+    }
+
     const [bearer, token] = authorization.split(" ");
 
     if (bearer?.trim()?.toLowerCase() !== "bearer" || !token || !isJWT(token)) {
-      throw new UnauthorizedException("Please login");
+      throw new UnauthorizedException(AuthMessage.Unauthorized);
     }
 
-    request.user = await this.authService.validateAccessToken(token);
+    request.user = await this.authService.verifyAccessToken(token);
     return true;
   }
 }

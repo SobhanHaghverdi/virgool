@@ -1,5 +1,5 @@
+import Gender from "./enums/gender.enum";
 import { Column, Entity } from "typeorm";
-import { Gender } from "src/common/enums/user.enum";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 
@@ -24,7 +24,7 @@ class UserProfileEntity extends BaseEntity {
   })
   public backgroundImageName?: string;
 
-  @Column("time without time zone", { name: "birth_date", nullable: true })
+  @Column("timestamp without time zone", { name: "birth_date", nullable: true })
   public birthDate?: Date;
 
   @Column("varchar", { name: "linkedin_profile", nullable: true, length: 150 })
