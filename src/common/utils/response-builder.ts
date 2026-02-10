@@ -17,9 +17,6 @@ class ResponseBuilder {
     return this.create(null as T, message || "حذف با موفقیت انجام شد", 204);
   }
 
-  /**
-   * برای Response بدون داده (فقط پیام)
-   */
   static message(message: string, statusCode: number = 200): ApiResponse<null> {
     return {
       data: null,

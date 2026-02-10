@@ -6,6 +6,7 @@ import AuthModule from "../auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import TypeormConfig from "src/config/typeorm.config";
+import CategoryModule from "../category/category.module";
 import UserProfileModule from "../user-profile/user-profile.module";
 
 @Module({
@@ -13,6 +14,7 @@ import UserProfileModule from "../user-profile/user-profile.module";
     OtpModule,
     UserModule,
     AuthModule,
+    CategoryModule,
     UserProfileModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,
