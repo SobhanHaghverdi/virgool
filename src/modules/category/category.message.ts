@@ -4,11 +4,13 @@ enum CategoryMessage {
 }
 
 enum CategorySwaggerResponseMessage {
+  Filter = "Filtered list of categories",
   Created = "Category created successfully",
 }
 
 enum CategorySwaggerOperationMessage {
   Create = "Category creation",
+  Filter = "Filter categories",
 }
 
 export {
