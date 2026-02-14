@@ -2,11 +2,9 @@ import CategoryService from "./category.service";
 import { CreateCategoryDto } from "./dto/category.dto";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import ResponseBuilder from "src/common/utils/response-builder";
-import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 import { Controller, Post, Body, Get, Query } from "@nestjs/common";
 
 import {
-  ApiConsumes,
   ApiOperation,
   ApiOkResponse,
   ApiCreatedResponse,
@@ -27,7 +25,6 @@ class CategoryController {
   }
 
   @Get()
-  @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
   @ApiOperation({ summary: CategorySwaggerOperationMessage.Filter })
   @ApiOkResponse({ description: CategorySwaggerResponseMessage.Filter })
   async filter(@Query() paginationDto: PaginationDto) {
@@ -36,7 +33,6 @@ class CategoryController {
   }
 
   @Post()
-  @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
   @ApiOperation({ summary: CategorySwaggerOperationMessage.Create })
   @ApiCreatedResponse({ description: CategorySwaggerResponseMessage.Created })
   async create(@Body() dto: CreateCategoryDto) {
