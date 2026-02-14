@@ -1,6 +1,6 @@
 import { Transform } from "class-transformer";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsEmpty, IsNotEmpty, IsString, Length } from "class-validator";
+import { IsNotEmpty, IsString, Length } from "class-validator";
+import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 
 class CreateCategoryDto {
   @IsString()
@@ -10,9 +10,10 @@ class CreateCategoryDto {
   @ApiProperty({ minLength: 3, maxLength: 150, default: "" })
   title: string;
 
-  @IsEmpty()
   @ApiPropertyOptional({ default: "", type: "integer" })
   priority?: number;
 }
 
-export { CreateCategoryDto };
+class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
+
+export { CreateCategoryDto, UpdateCategoryDto };

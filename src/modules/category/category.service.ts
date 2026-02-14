@@ -1,12 +1,17 @@
-import { type Repository } from "typeorm";
+import { Not, type Repository } from "typeorm";
 import CategoryEntity from "./category.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CategoryMessage } from "./category.message";
-import type { CreateCategoryDto } from "./dto/category.dto";
 import { Pagination } from "src/common/utils/pagination.util";
-import { ConflictException, Injectable } from "@nestjs/common";
 import { BaseService } from "src/common/abstracts/base.service";
 import type { PaginationDto } from "src/common/dto/pagination.dto";
+import type { CreateCategoryDto, UpdateCategoryDto } from "./dto/category.dto";
+
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from "@nestjs/common";
 
 @Injectable()
 class CategoryService extends BaseService<CategoryEntity> {
@@ -15,6 +20,10 @@ class CategoryService extends BaseService<CategoryEntity> {
     categoryRepository: Repository<CategoryEntity>,
   ) {
     super(categoryRepository);
+  }
+
+  async getById(id: number) {
+    return await this.repository.findOneBy({ id });
   }
 
   async filter(query: PaginationDto) {
@@ -40,6 +49,36 @@ class CategoryService extends BaseService<CategoryEntity> {
     }
 
     return await this.createEntity(dto);
+  }
+
+  async update(id: number, dto: UpdateCategoryDto) {
+    const category = await this.repository.findOneBy({ id });
+    if (!category) throw new NotFoundException(CategoryMessage.NotFound);
+
+    const { title = undefined, priority = undefined } = dto;
+
+    if (title) {
+      const doesTitleExists = await this.repository.existsBy({
+        title,
+        id: Not(id),
+      });
+
+      if (doesTitleExists) {
+        throw new ConflictException(CategoryMessage.DuplicateTitle);
+      }
+
+      category.title = title;
+    }
+
+    if (priority) category.priority = +priority;
+    return await this.saveChanges(category);
+  }
+
+  async deleteById(id: number) {
+    const category = await this.repository.findOneBy({ id });
+    if (!category) throw new NotFoundException(CategoryMessage.NotFound);
+
+    return await this.repository.remove(category);
   }
 }
 
