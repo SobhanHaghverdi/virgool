@@ -1,7 +1,7 @@
 import { map } from "rxjs/operators";
 import { type Observable } from "rxjs";
 import { type Response } from "express";
-import type { ApiResponse } from "../types/api-response.type";
+import type { ClientResponse } from "../types/client-response.type";
 
 import {
   Injectable,
@@ -11,11 +11,14 @@ import {
 } from "@nestjs/common";
 
 @Injectable()
-class ApiResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
+class ClientResponseInterceptor<T> implements NestInterceptor<
+  T,
+  ClientResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
-  ): Observable<ApiResponse<T>> {
+  ): Observable<ClientResponse<T>> {
     const ctx = context.switchToHttp();
     const response: Response = ctx.getResponse();
 
@@ -37,4 +40,4 @@ class ApiResponseInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
   }
 }
 
-export default ApiResponseInterceptor;
+export default ClientResponseInterceptor;
