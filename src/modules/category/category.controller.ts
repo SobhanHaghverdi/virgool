@@ -2,6 +2,7 @@ import CategoryService from "./category.service";
 import type CategoryEntity from "./category.entity";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import ResponseBuilder from "src/common/utils/response-builder";
+import ApiEndpoint from "src/common/decorators/api-endpoint.decorator";
 import type { ApiResponse } from "src/common/types/client-response.type";
 import { CreateCategoryDto, UpdateCategoryDto } from "./dto/category.dto";
 
@@ -18,14 +19,6 @@ import {
 } from "@nestjs/common";
 
 import {
-  ApiOperation,
-  ApiOkResponse,
-  ApiCreatedResponse,
-  ApiNotFoundResponse,
-  ApiNoContentResponse,
-} from "@nestjs/swagger";
-
-import {
   CategoryMessage,
   CategorySwaggerResponseMessage,
   CategorySwaggerOperationMessage,
@@ -40,8 +33,10 @@ class CategoryController {
   }
 
   @Get(":id")
-  @ApiOperation({ summary: CategorySwaggerOperationMessage.GetById })
-  @ApiOkResponse({ description: CategorySwaggerResponseMessage.Get })
+  @ApiEndpoint({
+    summary: CategorySwaggerOperationMessage.GetById,
+    successMessage: CategorySwaggerResponseMessage.Get,
+  })
   async get(
     @Param("id", ParseIntPipe) id: number,
   ): ApiResponse<CategoryEntity | null> {
@@ -50,25 +45,31 @@ class CategoryController {
   }
 
   @Get()
-  @ApiOperation({ summary: CategorySwaggerOperationMessage.Filter })
-  @ApiOkResponse({ description: CategorySwaggerResponseMessage.Filter })
+  @ApiEndpoint({
+    summary: CategorySwaggerOperationMessage.Filter,
+    successMessage: CategorySwaggerResponseMessage.Filter,
+  })
   async filter(@Query() paginationDto: PaginationDto): ApiResponse<object> {
     const categories = await this.categoryService.filter(paginationDto);
     return ResponseBuilder.ok(categories);
   }
 
   @Post()
-  @ApiOperation({ summary: CategorySwaggerOperationMessage.Create })
-  @ApiCreatedResponse({ description: CategorySwaggerResponseMessage.Created })
+  @ApiEndpoint({
+    summary: CategorySwaggerOperationMessage.Create,
+    createdMessage: CategorySwaggerResponseMessage.Created,
+  })
   async create(@Body() dto: CreateCategoryDto): ApiResponse<CategoryEntity> {
     const category = await this.categoryService.create(dto);
     return ResponseBuilder.created(category, CategoryMessage.Created);
   }
 
   @Patch(":id")
-  @ApiOperation({ summary: CategorySwaggerOperationMessage.Update })
-  @ApiOkResponse({ description: CategorySwaggerResponseMessage.Updated })
-  @ApiNotFoundResponse({ description: CategorySwaggerResponseMessage.NotFound })
+  @ApiEndpoint({
+    summary: CategorySwaggerOperationMessage.Update,
+    successMessage: CategorySwaggerResponseMessage.Updated,
+    notFoundMessage: CategorySwaggerResponseMessage.NotFound,
+  })
   async update(
     @Param("id", ParseIntPipe) id: number,
     @Body() dto: UpdateCategoryDto,
@@ -78,9 +79,11 @@ class CategoryController {
   }
 
   @Delete(":id")
-  @ApiOperation({ summary: CategorySwaggerOperationMessage.Delete })
-  @ApiNoContentResponse({ description: CategorySwaggerResponseMessage.Deleted })
-  @ApiNotFoundResponse({ description: CategorySwaggerResponseMessage.NotFound })
+  @ApiEndpoint({
+    summary: CategorySwaggerOperationMessage.Delete,
+    notFoundMessage: CategorySwaggerResponseMessage.NotFound,
+    noContentMessage: CategorySwaggerResponseMessage.Deleted,
+  })
   async delete(@Param("id", ParseIntPipe) id: number): ApiResponse<null> {
     await this.categoryService.deleteById(id);
     return ResponseBuilder.deleted();

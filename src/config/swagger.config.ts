@@ -27,7 +27,6 @@ const bearerAuthOptions: SecuritySchemeObject = {
 const globalResponses: ApiResponseOptions[] = [
   { status: 401, description: "Unauthorized" },
   { status: 403, description: "Forbidden" },
-  { status: 422, description: "Invalid data" },
   { status: 500, description: "Server error" },
 ];
 
