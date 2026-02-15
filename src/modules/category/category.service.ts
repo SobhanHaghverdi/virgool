@@ -2,6 +2,7 @@ import { Not, type Repository } from "typeorm";
 import CategoryEntity from "./category.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CategoryMessage } from "./category.message";
+import type { Id } from "src/common/types/entity.type";
 import { Pagination } from "src/common/utils/pagination.util";
 import { BaseService } from "src/common/abstracts/base.service";
 import type { PaginationDto } from "src/common/dto/pagination.dto";
@@ -22,7 +23,7 @@ class CategoryService extends BaseService<CategoryEntity> {
     super(categoryRepository);
   }
 
-  async getById(id: number) {
+  async getById(id: Id) {
     return await this.repository.findOneBy({ id });
   }
 
@@ -51,7 +52,7 @@ class CategoryService extends BaseService<CategoryEntity> {
     return await this.createEntity(dto);
   }
 
-  async update(id: number, dto: UpdateCategoryDto) {
+  async update(id: Id, dto: UpdateCategoryDto) {
     const category = await this.repository.findOneBy({ id });
     if (!category) throw new NotFoundException(CategoryMessage.NotFound);
 
@@ -74,7 +75,7 @@ class CategoryService extends BaseService<CategoryEntity> {
     return await this.saveChanges(category);
   }
 
-  async deleteById(id: number) {
+  async deleteById(id: Id) {
     const category = await this.repository.findOneBy({ id });
     if (!category) throw new NotFoundException(CategoryMessage.NotFound);
 

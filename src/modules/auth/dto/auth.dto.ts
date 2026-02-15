@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
+import type { Id } from "src/common/types/entity.type";
 import { IsInt, IsNotEmpty, IsString, Length } from "class-validator";
 
 class AuthDto {
@@ -21,7 +22,7 @@ class VerifyOtpDto {
   @IsNotEmpty()
   @ApiProperty({ default: "", minimum: 1 })
   @Transform(({ value }) => parseInt(value))
-  userId: number;
+  userId: Id;
 
   @IsString()
   @IsNotEmpty()

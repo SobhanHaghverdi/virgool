@@ -6,6 +6,7 @@ import { OtpGeneration } from "./types/otp.type";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import DateHelper from "src/common/utils/date-helper";
+import type { Id } from "src/common/types/entity.type";
 import type { CreateOtpDto, UpdateOtpDto } from "./dto/otp.dto";
 import { BaseService } from "src/common/abstracts/base.service";
 
@@ -23,7 +24,7 @@ class OtpService extends BaseService<OtpEntity> {
     super(otpRepository);
   }
 
-  public async getByUserId(userId: number) {
+  public async getByUserId(userId: Id) {
     return await this.repository.findOneBy({ userId });
   }
 
@@ -44,7 +45,7 @@ class OtpService extends BaseService<OtpEntity> {
   }
 
   public async update(
-    id: number,
+    id: Id,
     dto: UpdateOtpDto,
     entityManager?: EntityManager,
   ) {

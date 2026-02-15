@@ -4,6 +4,7 @@ import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import { AuthMethod } from "../auth/enums/auth.enum";
+import type { Id } from "src/common/types/entity.type";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
@@ -20,7 +21,7 @@ class UserService extends BaseService<UserEntity> {
     super(userRepository);
   }
 
-  public async getById(id: number) {
+  public async getById(id: Id) {
     return await this.repository.findOne({
       where: { id },
       relations: { otp: true },

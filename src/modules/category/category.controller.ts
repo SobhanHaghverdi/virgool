@@ -1,5 +1,6 @@
 import CategoryService from "./category.service";
 import type CategoryEntity from "./category.entity";
+import type { Id } from "src/common/types/entity.type";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import ResponseBuilder from "src/common/utils/response-builder";
 import ApiEndpoint from "src/common/decorators/api-endpoint.decorator";
@@ -38,7 +39,7 @@ class CategoryController {
     successMessage: CategorySwaggerResponseMessage.Get,
   })
   async get(
-    @Param("id", ParseIntPipe) id: number,
+    @Param("id", ParseIntPipe) id: Id,
   ): ApiResponse<CategoryEntity | null> {
     const category = await this.categoryService.getById(id);
     return ResponseBuilder.ok(category);
@@ -71,7 +72,7 @@ class CategoryController {
     notFoundMessage: CategorySwaggerResponseMessage.NotFound,
   })
   async update(
-    @Param("id", ParseIntPipe) id: number,
+    @Param("id", ParseIntPipe) id: Id,
     @Body() dto: UpdateCategoryDto,
   ): ApiResponse<CategoryEntity> {
     const category = await this.categoryService.update(id, dto);
@@ -84,7 +85,7 @@ class CategoryController {
     notFoundMessage: CategorySwaggerResponseMessage.NotFound,
     noContentMessage: CategorySwaggerResponseMessage.Deleted,
   })
-  async delete(@Param("id", ParseIntPipe) id: number): ApiResponse<null> {
+  async delete(@Param("id", ParseIntPipe) id: Id): ApiResponse<null> {
     await this.categoryService.deleteById(id);
     return ResponseBuilder.deleted();
   }

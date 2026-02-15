@@ -1,4 +1,5 @@
 import UserEntity from "../user/entities/user.entity";
+import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 
@@ -19,7 +20,7 @@ class OtpEntity extends BaseEntity {
   public expiresAt: Date;
 
   @Column("int", { name: "user_id", unique: true })
-  public userId: number;
+  public userId: Id;
 
   @CreateDateColumn({ name: "last_sent_at" })
   public lastSentAt: Date;
