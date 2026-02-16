@@ -30,7 +30,7 @@ const globalResponses: ApiResponseOptions[] = [
   { status: 500, description: "Server error" },
 ];
 
-function configureSwagger(app: INestApplication): void {
+function configureSwagger(app: INestApplication) {
   const document = new DocumentBuilder()
     .setTitle("Virgool")
     .setVersion(App.Version)
@@ -60,6 +60,7 @@ function addGlobalConsumes(document: OpenAPIObject): OpenAPIObject {
   Object.keys(paths).forEach((path) => {
     const methods = paths[path];
 
+    //* Add base consumes to non get routes
     Object.keys(methods)
       .filter((method) => method !== "get")
       .forEach((method) => {

@@ -6,8 +6,8 @@ import { AuthMessage } from "../auth.message";
 import {
   Injectable,
   CanActivate,
-  ExecutionContext,
   UnauthorizedException,
+  type ExecutionContext,
 } from "@nestjs/common";
 
 @Injectable()

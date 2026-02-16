@@ -5,9 +5,9 @@ import type { ClientResponse } from "../types/client-response.type";
 
 import {
   Injectable,
-  CallHandler,
   NestInterceptor,
-  ExecutionContext,
+  type CallHandler,
+  type ExecutionContext,
 } from "@nestjs/common";
 
 @Injectable()

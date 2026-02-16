@@ -24,7 +24,7 @@ class AuthController {
     successMessage: AuthSwaggerResponseMessage.SendOtp,
     summary: AuthSwaggerOperationMessage.Authentication,
   })
-  public async authenticate(@Body() dto: AuthDto): ApiResponse<number> {
+  async authenticate(@Body() dto: AuthDto): ApiResponse<number> {
     const user = await this.authService.authenticate(dto);
     return ResponseBuilder.ok(user.id, AuthMessage.SendOtp);
   }
@@ -34,7 +34,7 @@ class AuthController {
     successMessage: AuthSwaggerResponseMessage.Login,
     summary: AuthSwaggerOperationMessage.OtpVerification,
   })
-  public async verifyOtp(@Body() dto: VerifyOtpDto): ApiResponse<string> {
+  async verifyOtp(@Body() dto: VerifyOtpDto): ApiResponse<string> {
     const token = await this.authService.verifyOtp(dto);
     return ResponseBuilder.ok(token, AuthMessage.Login);
   }

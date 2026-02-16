@@ -14,41 +14,41 @@ import {
 @Entity(EntityName.Otp)
 class OtpEntity extends BaseEntity {
   @Column("varchar", { length: 5, unique: true })
-  public code: string;
+  code: string;
 
   @Column("timestamp without time zone", { name: "expires_at" })
-  public expiresAt: Date;
+  expiresAt: Date;
 
   @Column("int", { name: "user_id", unique: true })
-  public userId: Id;
+  userId: Id;
 
   @CreateDateColumn({ name: "last_sent_at" })
-  public lastSentAt: Date;
+  lastSentAt: Date;
 
   @Column("timestamp without time zone", {
     name: "last_failed_at",
     nullable: true,
   })
-  public lastFailedAt?: Date;
+  lastFailedAt?: Date;
 
   @Column("timestamp without time zone", {
     name: "last_verified_at",
     nullable: true,
   })
-  public lastVerifiedAt?: Date;
+  lastVerifiedAt?: Date;
 
   @Column("int", { default: 1, name: "total_requests" })
-  public totalRequests: number;
+  totalRequests: number;
 
   @Column("int", { default: 0, name: "total_failed_attempts" })
-  public totalFailedAttempts: number;
+  totalFailedAttempts: number;
 
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  createdAt: Date;
 
   @JoinColumn({ name: "user_id" })
   @OneToOne(() => UserEntity, (user) => user.otp, { onDelete: "CASCADE" })
-  public user: UserEntity;
+  user: UserEntity;
 }
 
 export default OtpEntity;

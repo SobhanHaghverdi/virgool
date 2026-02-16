@@ -21,18 +21,18 @@ class UserService extends BaseService<UserEntity> {
     super(userRepository);
   }
 
-  public async getById(id: Id) {
-    return await this.repository.findOne({
+  async getById(id: Id) {
+    return this.repository.findOne({
       where: { id },
       relations: { otp: true },
     });
   }
 
-  public async getByAuthMethod(authMethod: AuthMethod, identifier: string) {
-    return await this.repository.findOneBy({ [authMethod]: identifier });
+  async getByAuthMethod(authMethod: AuthMethod, identifier: string) {
+    return this.repository.findOneBy({ [authMethod]: identifier });
   }
 
-  public async create(dto: CreateUserDto, entityManager?: EntityManager) {
+  async create(dto: CreateUserDto, entityManager?: EntityManager) {
     const manager = entityManager ?? this.repository.manager;
     const { email = undefined, phoneNumber = undefined } = dto;
     const identifier = phoneNumber || email;
@@ -55,7 +55,7 @@ class UserService extends BaseService<UserEntity> {
 
     //* Generate user name
     user.userName = `m_${user.id}`;
-    return await this.saveChanges(user, manager);
+    return this.saveChanges(user, manager);
   }
 }
 

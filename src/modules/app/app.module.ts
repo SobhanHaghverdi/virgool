@@ -7,7 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import TypeormConfig from "src/config/typeorm.config";
 import CategoryModule from "../category/category.module";
 import UserProfileModule from "../user-profile/user-profile.module";
-import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { type MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
 
 @Module({

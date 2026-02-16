@@ -24,15 +24,15 @@ class OtpService extends BaseService<OtpEntity> {
     super(otpRepository);
   }
 
-  public async getByUserId(userId: Id) {
-    return await this.repository.findOneBy({ userId });
+  async getByUserId(userId: Id) {
+    return this.repository.findOneBy({ userId });
   }
 
-  public async getByCode(code: string) {
-    return await this.repository.findOneBy({ code });
+  async getByCode(code: string) {
+    return this.repository.findOneBy({ code });
   }
 
-  public async create(dto: CreateOtpDto, entityManager?: EntityManager) {
+  async create(dto: CreateOtpDto, entityManager?: EntityManager) {
     const manager = entityManager ?? this.repository.manager;
     const doesOtpExists = await manager.existsBy(OtpEntity, {
       userId: dto.userId,
@@ -41,14 +41,10 @@ class OtpService extends BaseService<OtpEntity> {
     if (doesOtpExists) throw new ConflictException(OtpMessage.Duplicate);
     const { code, expiresAt } = this.generateCodeAndExpirationDate();
 
-    return await this.createEntity({ ...dto, code, expiresAt }, manager);
+    return this.createEntity({ ...dto, code, expiresAt }, manager);
   }
 
-  public async update(
-    id: Id,
-    dto: UpdateOtpDto,
-    entityManager?: EntityManager,
-  ) {
+  async update(id: Id, dto: UpdateOtpDto, entityManager?: EntityManager) {
     const {
       verify = undefined,
       isNewRequest = undefined,
@@ -74,7 +70,7 @@ class OtpService extends BaseService<OtpEntity> {
       otp.lastVerifiedAt = new Date();
     }
 
-    return await this.saveChanges(otp, manager);
+    return this.saveChanges(otp, manager);
   }
 
   private generateCodeAndExpirationDate(): OtpGeneration {

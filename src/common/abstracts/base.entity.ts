@@ -3,7 +3,7 @@ import { PrimaryGeneratedColumn } from "typeorm";
 
 class BaseEntity {
   @PrimaryGeneratedColumn("increment")
-  public id: Id;
+  id: Id;
 }
 
 export { BaseEntity };

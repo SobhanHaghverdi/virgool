@@ -24,7 +24,7 @@ class CategoryService extends BaseService<CategoryEntity> {
   }
 
   async getById(id: Id) {
-    return await this.repository.findOneBy({ id });
+    return this.repository.findOneBy({ id });
   }
 
   async filter(query: PaginationDto) {
@@ -49,7 +49,7 @@ class CategoryService extends BaseService<CategoryEntity> {
       throw new ConflictException(CategoryMessage.DuplicateTitle);
     }
 
-    return await this.createEntity(dto);
+    return this.createEntity(dto);
   }
 
   async update(id: Id, dto: UpdateCategoryDto) {
@@ -72,14 +72,14 @@ class CategoryService extends BaseService<CategoryEntity> {
     }
 
     if (priority) category.priority = +priority;
-    return await this.saveChanges(category);
+    return this.saveChanges(category);
   }
 
   async deleteById(id: Id) {
     const category = await this.repository.findOneBy({ id });
     if (!category) throw new NotFoundException(CategoryMessage.NotFound);
 
-    return await this.repository.remove(category);
+    return this.repository.remove(category);
   }
 }
 

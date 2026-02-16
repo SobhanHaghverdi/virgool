@@ -27,7 +27,7 @@ class AuthService {
     this.userService = userService;
   }
 
-  public async authenticate(dto: AuthDto): Promise<UserEntity> {
+  async authenticate(dto: AuthDto): Promise<UserEntity> {
     const { identifier } = dto;
     const authMethod = this.detectIdentifierType(identifier);
 
@@ -58,7 +58,7 @@ class AuthService {
     return user;
   }
 
-  public async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+  async verifyOtp(dto: VerifyOtpDto): Promise<string> {
     const { code, userId } = dto;
     const user = await this.userService.getById(userId);
 
@@ -79,10 +79,10 @@ class AuthService {
     }
 
     await this.otpService.update(otp.id, { verify: true });
-    return await this.generateAccessToken(user);
+    return this.generateAccessToken(user);
   }
 
-  public async verifyAccessToken(token: string) {
+  async verifyAccessToken(token: string) {
     try {
       const payload =
         await this.jwtService.verifyAsync<AccessTokenPayload>(token);
@@ -97,7 +97,7 @@ class AuthService {
   }
 
   private async generateAccessToken(user: UserEntity) {
-    return await this.jwtService.signAsync<AccessTokenPayload>(
+    return this.jwtService.signAsync<AccessTokenPayload>(
       {
         userId: user.id,
         userName: user.userName,
@@ -116,7 +116,7 @@ class AuthService {
       );
     }
 
-    return await this.userService.create({ [authMethod]: identifier });
+    return this.userService.create({ [authMethod]: identifier });
   }
 
   private detectIdentifierType(identifier: string): AuthMethod {
