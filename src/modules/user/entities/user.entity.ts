@@ -6,7 +6,6 @@ import {
   Column,
   Entity,
   OneToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -19,10 +18,10 @@ class UserEntity extends BaseEntity {
     unique: true,
     nullable: true,
   })
-  public userName?: string;
+  userName?: string;
 
   @Column("varchar", { length: 150, unique: true, nullable: true })
-  public email?: string;
+  email?: string;
 
   @Column("varchar", {
     name: "phone_number",
@@ -30,22 +29,22 @@ class UserEntity extends BaseEntity {
     unique: true,
     nullable: true,
   })
-  public phoneNumber?: string;
+  phoneNumber?: string;
 
   @Column("varchar", { length: 150, nullable: true })
-  public password?: string;
+  password?: string;
 
   @CreateDateColumn({ name: "created_at" })
-  public createdAt: Date;
+  createdAt: Date;
 
   @UpdateDateColumn({ name: "updated_at" })
-  public updatedAt: Date;
+  updatedAt: Date;
 
   @OneToOne(() => OtpEntity, (otp) => otp.user, {
     onDelete: "SET NULL",
     nullable: true,
   })
-  public otp?: OtpEntity;
+  otp?: OtpEntity;
 }
 
 export default UserEntity;

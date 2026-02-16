@@ -6,29 +6,29 @@ import { BaseEntity } from "src/common/abstracts/base.entity";
 @Entity(EntityName.UserProfile)
 class UserProfileEntity extends BaseEntity {
   @Column("varchar", { name: "nick_name", length: 150 })
-  public nickName: string;
+  nickName: string;
 
   @Column("varchar", { length: 200, nullable: true })
-  public bio?: string;
+  bio?: string;
 
   @Column("enum", { enum: Gender, nullable: true })
-  public gender?: string;
+  gender?: string;
 
   @Column("varchar", { name: "image_name", length: 50, nullable: true })
-  public imageName?: string;
+  imageName?: string;
 
   @Column("varchar", {
     name: "background_image_name",
     length: 50,
     nullable: true,
   })
-  public backgroundImageName?: string;
+  backgroundImageName?: string;
 
   @Column("timestamp without time zone", { name: "birth_date", nullable: true })
-  public birthDate?: Date;
+  birthDate?: Date;
 
   @Column("varchar", { name: "linkedin_profile", nullable: true, length: 150 })
-  public linkedinProfile?: string;
+  linkedinProfile?: string;
 }
 
 export default UserProfileEntity;

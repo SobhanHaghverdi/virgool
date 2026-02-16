@@ -2,14 +2,8 @@ import AuthService from "./auth.service";
 import { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
 import { Post, Body, Controller } from "@nestjs/common";
 import ResponseBuilder from "src/common/utils/response-builder";
-import SwaggerConsume from "src/common/enums/swagger-consume.enum";
-
-import {
-  ApiTags,
-  ApiConsumes,
-  ApiOperation,
-  ApiOkResponse,
-} from "@nestjs/swagger";
+import ApiEndpoint from "src/common/decorators/api-endpoint.decorator";
+import type { ApiResponse } from "src/common/types/client-response.type";
 
 import {
   AuthMessage,
@@ -17,7 +11,6 @@ import {
   AuthSwaggerOperationMessage,
 } from "./auth.message";
 
-@ApiTags("Auth")
 @Controller("auth")
 class AuthController {
   private readonly authService: AuthService;
@@ -27,19 +20,21 @@ class AuthController {
   }
 
   @Post("authenticate")
-  @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  @ApiOperation({ summary: AuthSwaggerOperationMessage.Authentication })
-  @ApiOkResponse({ description: AuthSwaggerResponseMessage.SendOtp })
-  public async authenticate(@Body() dto: AuthDto) {
+  @ApiEndpoint({
+    successMessage: AuthSwaggerResponseMessage.SendOtp,
+    summary: AuthSwaggerOperationMessage.Authentication,
+  })
+  async authenticate(@Body() dto: AuthDto): ApiResponse<number> {
     const user = await this.authService.authenticate(dto);
     return ResponseBuilder.ok(user.id, AuthMessage.SendOtp);
   }
 
   @Post("verify-otp")
-  @ApiConsumes(SwaggerConsume.UrlEncoded, SwaggerConsume.Json)
-  @ApiOperation({ summary: AuthSwaggerOperationMessage.OtpVerification })
-  @ApiOkResponse({ description: AuthSwaggerResponseMessage.Login })
-  public async verifyOtp(@Body() dto: VerifyOtpDto) {
+  @ApiEndpoint({
+    successMessage: AuthSwaggerResponseMessage.Login,
+    summary: AuthSwaggerOperationMessage.OtpVerification,
+  })
+  async verifyOtp(@Body() dto: VerifyOtpDto): ApiResponse<string> {
     const token = await this.authService.verifyOtp(dto);
     return ResponseBuilder.ok(token, AuthMessage.Login);
   }

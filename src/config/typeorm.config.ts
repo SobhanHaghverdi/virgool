@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 
 import {
-  type TypeOrmModuleOptions,
   TypeOrmOptionsFactory,
+  type TypeOrmModuleOptions,
 } from "@nestjs/typeorm";
 
 @Injectable()

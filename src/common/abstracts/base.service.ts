@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 
-import {
+import type {
   Repository,
   DeepPartial,
   SaveOptions,
@@ -23,16 +23,16 @@ abstract class BaseService<T extends ObjectLiteral> {
     const manager = entityManager ?? this.repository.manager;
     const entity = manager.create(this.repository.target, data);
 
-    return await this.saveChanges(entity, manager);
+    return this.saveChanges(entity, manager);
   }
 
-  public async saveChanges(
+  async saveChanges(
     entity: T,
     entityManager?: EntityManager,
     options?: SaveOptions,
   ) {
     const manager = entityManager ?? this.repository.manager;
-    return await manager.save(entity, options);
+    return manager.save(entity, options);
   }
 }
 

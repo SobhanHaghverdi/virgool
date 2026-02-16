@@ -1,9 +1,10 @@
+import type { Id } from "src/common/types/entity.type";
 import { IsInt, IsNotEmpty, IsBoolean, IsEmpty } from "class-validator";
 
 class CreateOtpDto {
   @IsInt()
   @IsNotEmpty()
-  userId: number;
+  userId: Id;
 }
 
 class UpdateOtpDto {

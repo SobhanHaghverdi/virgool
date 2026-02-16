@@ -1,5 +1,7 @@
+import type { Id } from "src/common/types/entity.type";
+
 type AccessTokenPayload = {
-  userId: number;
+  userId: Id;
   userName?: string;
 };
 
