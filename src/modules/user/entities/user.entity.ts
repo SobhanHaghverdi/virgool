@@ -1,6 +1,7 @@
 import OtpEntity from "src/modules/otp/otp.entity";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
+import UserProfileEntity from "src/modules/user-profile/user-profile.entity";
 
 import {
   Column,
@@ -45,6 +46,12 @@ class UserEntity extends BaseEntity {
     nullable: true,
   })
   otp?: OtpEntity;
+
+  @OneToOne(() => UserProfileEntity, (profile) => profile.user, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  profile?: UserProfileEntity;
 }
 
 export default UserEntity;

@@ -1,6 +1,6 @@
 import { ApiHeader } from "../enums/header.enum";
-import { applyDecorators } from "@nestjs/common";
-import { AuthMessage } from "src/modules/auth/auth.message";
+import AuthGuard from "src/modules/auth/guards/auth.guard";
+import { applyDecorators, UseGuards } from "@nestjs/common";
 import type { ApiEndpointOptions } from "../types/api-endpoint.type";
 
 import {
@@ -10,7 +10,6 @@ import {
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiNoContentResponse,
-  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
 function ApiEndpoint(options: ApiEndpointOptions) {
@@ -43,8 +42,8 @@ function ApiEndpoint(options: ApiEndpointOptions) {
 
   if (authRequired) {
     decorators.push(
+      UseGuards(AuthGuard),
       ApiBearerAuth(ApiHeader.Authorization),
-      ApiUnauthorizedResponse({ description: AuthMessage.Unauthorized }),
     );
   }
 

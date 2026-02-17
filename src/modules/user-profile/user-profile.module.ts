@@ -4,6 +4,7 @@ import UserProfileEntity from "./user-profile.entity";
 import UserProfileService from "./user-profile.service";
 
 @Module({
+  exports: [UserProfileService],
   providers: [UserProfileService],
   imports: [TypeOrmModule.forFeature([UserProfileEntity])],
 })

@@ -88,7 +88,13 @@ class AuthService {
         await this.jwtService.verifyAsync<AccessTokenPayload>(token);
 
       const user = await this.userService.getById(payload?.userId);
-      if (!user) throw new UnauthorizedException(AuthMessage.Unauthorized);
+
+      if (
+        !user ||
+        (payload.profileId && user.profile?.id !== payload.profileId)
+      ) {
+        throw new UnauthorizedException(AuthMessage.Unauthorized);
+      }
 
       return payload;
     } catch {
@@ -101,6 +107,7 @@ class AuthService {
       {
         userId: user.id,
         userName: user.userName,
+        profileId: user.profile?.id,
       },
       { expiresIn: JwtExpiration.AccessToken },
     );
