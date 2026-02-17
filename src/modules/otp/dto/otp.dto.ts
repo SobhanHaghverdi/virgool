@@ -1,23 +1,22 @@
 import type { Id } from "src/common/types/entity.type";
-import { IsInt, IsNotEmpty, IsBoolean, IsEmpty } from "class-validator";
+import { IsNotEmpty, IsBoolean, IsOptional } from "class-validator";
 
 class CreateOtpDto {
-  @IsInt()
   @IsNotEmpty()
   userId: Id;
 }
 
 class UpdateOtpDto {
-  @IsEmpty()
   @IsBoolean()
+  @IsOptional()
   isNewRequest?: boolean;
 
-  @IsEmpty()
   @IsBoolean()
+  @IsOptional()
   isCodeInvalid?: boolean;
 
-  @IsEmpty()
   @IsBoolean()
+  @IsOptional()
   verify?: boolean;
 }
 

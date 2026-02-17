@@ -1,13 +1,7 @@
 import Gender from "../enums/gender.enum";
-import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import {
-  IsDate,
-  IsEnum,
-  IsOptional,
-  IsString,
-  MaxLength,
-} from "class-validator";
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEnum, IsOptional, IsString, MaxLength } from "class-validator";
 
 class UpsertUserProfileDto {
   @IsString()

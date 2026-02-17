@@ -23,9 +23,11 @@ class CleanMultipartPipe implements PipeTransform {
       if (typeof value === "string") {
         value = value.trim();
         if (value !== "") cleaned[key] = value;
-      } else if (!isNaN(value) && value !== "") {
+      } //* Convert string to numbers (if is number in shape of string)
+      else if (!isNaN(value) && value !== "") {
         cleaned[key] = Number(value);
-      } else if (value === "true" || value === "false") {
+      } //* Convert to real boolean
+      else if (value === "true" || value === "false") {
         cleaned[key] = value === "true";
       } else if (value !== null && value !== undefined) {
         cleaned[key] = value;
