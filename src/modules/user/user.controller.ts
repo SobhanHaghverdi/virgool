@@ -2,15 +2,14 @@ import type { Request } from "express";
 import UserService from "./user.service";
 import { ApiConsumes } from "@nestjs/swagger";
 import { FileFormat } from "src/common/enums/file.enum";
-import { multerStorage } from "src/common/utils/multer.util";
 import ResponseBuilder from "src/common/utils/response-builder";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 import UserProfileService from "../user-profile/user-profile.service";
 import ApiEndpoint from "src/common/decorators/api-endpoint.decorator";
 import CleanMultipartPipe from "src/common/pipes/clean-multipart.pipe";
 import type UserProfileEntity from "../user-profile/user-profile.entity";
 import type { ApiResponse } from "src/common/types/client-response.type";
+import { MultipleFileUpload } from "src/common/decorators/file-upload.decorator";
 
 import {
   UserProfileFilesDto,
@@ -30,7 +29,6 @@ import {
   Controller,
   ParseFilePipe,
   UploadedFiles,
-  UseInterceptors,
 } from "@nestjs/common";
 
 @Controller("users")
@@ -48,20 +46,13 @@ class UserController {
 
   @Patch("profile")
   @ApiConsumes(SwaggerConsume.MultipartFormData)
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: "image", maxCount: 1 },
-        { name: "backgroundImage", maxCount: 1 },
-      ],
-      {
-        storage: multerStorage("user-profile", [
-          FileFormat.Png,
-          FileFormat.Jpg,
-          FileFormat.Jpeg,
-        ]),
-      },
-    ),
+  @MultipleFileUpload(
+    "user-profile",
+    [
+      { name: "image", maxCount: 1 },
+      { name: "backgroundImage", maxCount: 1 },
+    ],
+    [FileFormat.Png, FileFormat.Jpg, FileFormat.Jpeg],
   )
   @ApiEndpoint({
     authRequired: true,
