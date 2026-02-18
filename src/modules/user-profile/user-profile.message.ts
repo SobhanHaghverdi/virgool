@@ -1,3 +1,5 @@
+import type { MessageStructure } from "src/common/types/api-endpoint.type";
+
 enum UserProfileMessage {
   NotFound = "پروفایل یافت نشد.",
   Upsert = "پروفایل با موفقیت ویرایش شد.",
@@ -6,17 +8,20 @@ enum UserProfileMessage {
   DuplicateLinkedinProfile = "لینک پروفایل شبکه اجتماعی لینکدین از قبل وجود دارد",
 }
 
-enum UserProfileSwaggerResponseMessage {
-  NotFound = "User profile not found",
-  Upserted = "User profile updated successfully",
-}
+type UserProfileMessageKey = "UpsertProfile";
 
-enum UserProfileSwaggerOperationMessage {
-  Upsert = "Create or update user profile",
-}
-
-export {
-  UserProfileMessage,
-  UserProfileSwaggerResponseMessage,
-  UserProfileSwaggerOperationMessage,
+const UserProfileSwaggerMessage: Record<
+  UserProfileMessageKey,
+  MessageStructure
+> = {
+  UpsertProfile: {
+    summary: "Create or update user profile",
+    responses: {
+      notFound: "Profile not found",
+      success: "User profile updated successfully",
+      conflict: "Duplicate profile, x or linkedin ",
+    },
+  },
 };
+
+export { UserProfileMessage, UserProfileSwaggerMessage };

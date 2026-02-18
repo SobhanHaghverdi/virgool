@@ -1,3 +1,5 @@
+import type { MessageStructure } from "src/common/types/api-endpoint.type";
+
 enum CategoryMessage {
   NotFound = "دسته بندی یافت نشد",
   Created = "دسته بندی با موفقیت ایجاد شد.",
@@ -5,25 +7,39 @@ enum CategoryMessage {
   DuplicateTitle = "عنوان دسته بندی از قبل وجود دارد.",
 }
 
-enum CategorySwaggerResponseMessage {
-  Get = "Category details",
-  NotFound = "Category not found",
-  Filter = "Filtered list of categories",
-  Created = "Category created successfully",
-  Updated = "Category updated successfully",
-  Deleted = "Category deleted successfully",
-}
+type CategoryMessageKey = "GetById" | "Filter" | "Create" | "Update" | "Delete";
 
-enum CategorySwaggerOperationMessage {
-  Update = "Update category",
-  Delete = "Delete category",
-  Create = "Category creation",
-  Filter = "Filter categories",
-  GetById = "Get category details by id",
-}
-
-export {
-  CategoryMessage,
-  CategorySwaggerResponseMessage,
-  CategorySwaggerOperationMessage,
+const CategorySwaggerMessage: Record<CategoryMessageKey, MessageStructure> = {
+  GetById: {
+    summary: "Get category details by id",
+    responses: { success: "Category details" },
+  },
+  Filter: {
+    summary: "Filter categories",
+    responses: { success: "Filtered list of categories" },
+  },
+  Create: {
+    summary: "Create category",
+    responses: {
+      conflict: "Duplicate title",
+      created: "Category created successfully",
+    },
+  },
+  Update: {
+    summary: "Update category",
+    responses: {
+      conflict: "Duplicate title",
+      notFound: "Category not found",
+      success: "Category updated successfully",
+    },
+  },
+  Delete: {
+    summary: "Delete category",
+    responses: {
+      notFound: "Category not found",
+      noContent: "Category deleted successfully",
+    },
+  },
 };
+
+export { CategoryMessage, CategorySwaggerMessage };

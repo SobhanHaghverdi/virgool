@@ -1,3 +1,5 @@
+import { HttpResponse } from "../enums/http.enum";
+
 interface ApiEndpointOptions {
   summary: string;
   authRequired?: boolean;
@@ -7,4 +9,9 @@ interface ApiEndpointOptions {
   noContentMessage?: string;
 }
 
-export type { ApiEndpointOptions };
+interface MessageStructure {
+  summary?: string;
+  responses?: Partial<Record<HttpResponse, string>>;
+}
+
+export type { ApiEndpointOptions, MessageStructure };

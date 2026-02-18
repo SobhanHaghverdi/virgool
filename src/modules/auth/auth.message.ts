@@ -1,3 +1,5 @@
+import type { MessageStructure } from "src/common/types/api-endpoint.type";
+
 enum AuthMessage {
   Login = "شما با موفقیت وارد شدید.",
   Unauthorized = "لفطا ابتدا وارد سایت شوید",
@@ -8,14 +10,23 @@ enum AuthMessage {
   InvalidEmailOrPhoneNumberOrUserName = "شماره موبایل، ایمیل یا نام کاربری صحیح نمی باشد.",
 }
 
-enum AuthSwaggerResponseMessage {
-  SendOtp = "Otp has sent successfully",
-  Login = "You have logged in successfully",
-}
+type AuthMessageKey = "Authenticate" | "VerifyOtp";
 
-enum AuthSwaggerOperationMessage {
-  OtpVerification = "Otp verification",
-  Authentication = "User authentication",
-}
+const AuthSwaggerMessage: Record<AuthMessageKey, MessageStructure> = {
+  Authenticate: {
+    summary: "User authentication",
+    responses: {
+      success: "Otp has sent successfully",
+      unauthorized: "Please wait before receiving new otp",
+    },
+  },
+  VerifyOtp: {
+    summary: "Otp verification",
+    responses: {
+      success: "You have logged in successfully",
+      unauthorized: "Please login - expired or invalid",
+    },
+  },
+};
 
-export { AuthMessage, AuthSwaggerOperationMessage, AuthSwaggerResponseMessage };
+export { AuthMessage, AuthSwaggerMessage };

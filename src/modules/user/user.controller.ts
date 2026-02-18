@@ -4,8 +4,8 @@ import { ApiConsumes } from "@nestjs/swagger";
 import { FileFormat } from "src/common/enums/file.enum";
 import ResponseBuilder from "src/common/utils/response-builder";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
+import ApiMessage from "src/common/decorators/api-message.decorator";
 import UserProfileService from "../user-profile/user-profile.service";
-import ApiEndpoint from "src/common/decorators/api-endpoint.decorator";
 import CleanMultipartPipe from "src/common/pipes/clean-multipart.pipe";
 import type UserProfileEntity from "../user-profile/user-profile.entity";
 import type { ApiResponse } from "src/common/types/client-response.type";
@@ -18,8 +18,7 @@ import {
 
 import {
   UserProfileMessage,
-  UserProfileSwaggerOperationMessage,
-  UserProfileSwaggerResponseMessage,
+  UserProfileSwaggerMessage,
 } from "../user-profile/user-profile.message";
 
 import {
@@ -46,6 +45,7 @@ class UserController {
 
   @Patch("profile")
   @ApiConsumes(SwaggerConsume.MultipartFormData)
+  @ApiMessage(UserProfileSwaggerMessage.UpsertProfile)
   @MultipleFileUpload(
     "user-profile",
     [
@@ -54,12 +54,6 @@ class UserController {
     ],
     [FileFormat.Png, FileFormat.Jpg, FileFormat.Jpeg],
   )
-  @ApiEndpoint({
-    authRequired: true,
-    summary: UserProfileSwaggerOperationMessage.Upsert,
-    successMessage: UserProfileSwaggerResponseMessage.Upserted,
-    notFoundMessage: UserProfileSwaggerResponseMessage.NotFound,
-  })
   async upsertProfile(
     @Req() req: Request,
     @Body(CleanMultipartPipe) dto: UpsertUserProfileDto,
