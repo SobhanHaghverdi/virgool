@@ -1,13 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import type { Id } from "src/common/types/entity.type";
-import { IsInt, IsNotEmpty, IsString, Length } from "class-validator";
+import { IsNotEmpty, IsString, Length } from "class-validator";
 
 class AuthDto {
   @IsString()
   @IsNotEmpty()
   @Length(3, 150)
-  @Transform(({ value }) => value.trim().toLowerCase())
+  @Transform(({ value }) => value.toLowerCase())
   @ApiProperty({
     default: "",
     minLength: 3,
@@ -18,16 +18,13 @@ class AuthDto {
 }
 
 class VerifyOtpDto {
-  @IsInt()
   @IsNotEmpty()
-  @ApiProperty({ default: "", minimum: 1 })
-  @Transform(({ value }) => parseInt(value))
+  @ApiProperty({ default: "", type: "integer" })
   userId: Id;
 
   @IsString()
   @IsNotEmpty()
   @Length(5, 5)
-  @Transform(({ value }) => value.trim())
   @ApiProperty({
     default: "",
     minLength: 5,

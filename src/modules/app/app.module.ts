@@ -29,7 +29,7 @@ import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
 })
 class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(OmitEmptyMiddleware);
+    consumer.apply(OmitEmptyMiddleware).forRoutes("*");
   }
 }
 

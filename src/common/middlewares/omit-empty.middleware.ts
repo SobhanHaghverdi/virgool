@@ -9,16 +9,6 @@ class OmitEmptyMiddleware implements NestMiddleware {
       req.body = this.cleanObject(req.body);
     }
 
-    //* Delete empty values from query
-    if (req.query && typeof req.query === "object") {
-      req.query = this.cleanObject(req.query);
-    }
-
-    //* Delete empty values from params
-    if (req.params && typeof req.params === "object") {
-      req.params = this.cleanObject(req.params);
-    }
-
     next();
   }
 
@@ -28,7 +18,7 @@ class OmitEmptyMiddleware implements NestMiddleware {
     }
 
     if (typeof obj !== "object") {
-      return obj;
+      return typeof obj === "string" ? obj.trim() : obj;
     }
 
     if (Array.isArray(obj)) {

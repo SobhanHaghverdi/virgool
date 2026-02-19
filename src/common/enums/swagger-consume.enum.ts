@@ -1,6 +1,6 @@
 enum SwaggerConsume {
   Json = "application/json",
-  MultipartData = "multipart/data",
+  MultipartFormData = "multipart/form-data",
   UrlEncoded = "application/x-www-form-urlencoded",
 }
 

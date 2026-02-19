@@ -24,7 +24,7 @@ class UserService extends BaseService<UserEntity> {
   async getById(id: Id) {
     return this.repository.findOne({
       where: { id },
-      relations: { otp: true },
+      relations: { otp: true, profile: true },
     });
   }
 
