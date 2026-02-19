@@ -2,6 +2,7 @@ import type { Request } from "express";
 import UserService from "./user.service";
 import { ApiConsumes } from "@nestjs/swagger";
 import { FileFormat } from "src/common/enums/file.enum";
+import ApiAuth from "src/common/decorators/api-auth.decorator";
 import ResponseBuilder from "src/common/utils/response-builder";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 import ApiMessage from "src/common/decorators/api-message.decorator";
@@ -43,6 +44,7 @@ class UserController {
     this.userProfileService = userProfileService;
   }
 
+  @ApiAuth()
   @Patch("profile")
   @ApiConsumes(SwaggerConsume.MultipartFormData)
   @ApiMessage(UserProfileSwaggerMessage.UpsertProfile)
