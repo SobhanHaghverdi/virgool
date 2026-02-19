@@ -8,7 +8,7 @@ enum UserProfileMessage {
   DuplicateLinkedinProfile = "لینک پروفایل شبکه اجتماعی لینکدین از قبل وجود دارد",
 }
 
-type UserProfileMessageKey = "UpsertProfile";
+type UserProfileMessageKey = "UpsertProfile" | "GetProfile";
 
 const UserProfileSwaggerMessage: Record<
   UserProfileMessageKey,
@@ -21,6 +21,10 @@ const UserProfileSwaggerMessage: Record<
       success: "User profile updated successfully",
       conflict: "Duplicate profile, x or linkedin ",
     },
+  },
+  GetProfile: {
+    summary: "Get profile info by user id",
+    responses: { success: "User profile details" },
   },
 };
 

@@ -26,7 +26,10 @@ class UserProfileService extends BaseService<UserProfileEntity> {
   }
 
   async getByUserId(userId: Id) {
-    return this.repository.findOneBy({ userId });
+    return this.repository.findOne({
+      where: { userId },
+      relations: { user: true },
+    });
   }
 
   async upsert(

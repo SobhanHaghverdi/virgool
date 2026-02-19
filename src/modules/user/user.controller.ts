@@ -23,8 +23,9 @@ import {
 } from "../user-profile/user-profile.message";
 
 import {
-  Body,
+  Get,
   Req,
+  Body,
   Patch,
   Controller,
   ParseFilePipe,
@@ -42,6 +43,14 @@ class UserController {
   ) {
     this.userService = userService;
     this.userProfileService = userProfileService;
+  }
+
+  @ApiAuth()
+  @Get("profile")
+  @ApiMessage(UserProfileSwaggerMessage.GetProfile)
+  async getProfile(@Req() req: Request): ApiResponse<UserProfileEntity | null> {
+    const profile = await this.userProfileService.getByUserId(req.user!.userId);
+    return ResponseBuilder.ok(profile);
   }
 
   @ApiAuth()

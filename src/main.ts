@@ -2,12 +2,14 @@ import { NestFactory } from "@nestjs/core";
 import AppModule from "./modules/app/app.module";
 import globalPipes from "./common/pipes/global.pipe";
 import configureSwagger from "./config/swagger.config";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import ClientResponseInterceptor from "./common/interceptors/client-response.interceptor";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const { PORT } = process.env;
 
+  app.useStaticAssets("public");
   app.useGlobalPipes(...globalPipes);
   app.useGlobalInterceptors(new ClientResponseInterceptor());
 
