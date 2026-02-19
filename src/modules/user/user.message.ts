@@ -1,4 +1,6 @@
 enum UserMessage {
+  NotFound = "کاربر یافت نشد.",
+  DuplicateEmail = "ایمیل از قبل وجود دارد.",
   Duplicate = "کاربری با این مشخصات قبلا ثبت نام کرده است.",
   RequiredEmailOrPhoneNumber = "شماره موبایل یا ایمیل الزامی می باشد.",
 }

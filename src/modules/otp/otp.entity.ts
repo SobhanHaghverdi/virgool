@@ -1,3 +1,4 @@
+import { AuthMethod } from "../auth/enums/auth.enum";
 import UserEntity from "../user/entities/user.entity";
 import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
@@ -42,6 +43,9 @@ class OtpEntity extends BaseEntity {
 
   @Column("int", { default: 0, name: "total_failed_attempts" })
   totalFailedAttempts: number;
+
+  @Column("enum", { enum: AuthMethod })
+  method: AuthMethod;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

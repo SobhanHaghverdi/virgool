@@ -1,24 +1,30 @@
+import OtpService from "../otp/otp.service";
 import { UserMessage } from "./user.message";
 import UserEntity from "./entities/user.entity";
-import type { CreateUserDto } from "./user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import { AuthMethod } from "../auth/enums/auth.enum";
 import type { Id } from "src/common/types/entity.type";
+import type { CreateUserDto, UpdateUserDto } from "./user.dto";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
   Injectable,
   ConflictException,
+  NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
 
 @Injectable()
 class UserService extends BaseService<UserEntity> {
+  private readonly otpService: OtpService;
+
   constructor(
+    otpService: OtpService,
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
   ) {
     super(userRepository);
+    this.otpService = otpService;
   }
 
   async getById(id: Id) {
@@ -56,6 +62,41 @@ class UserService extends BaseService<UserEntity> {
     //* Generate user name
     user.userName = `m_${user.id}`;
     return this.saveChanges(user, manager);
+  }
+
+  async update(id: Id, dto: UpdateUserDto) {
+    const { email = undefined } = dto;
+
+    const user = await this.repository.findOne({
+      where: { id },
+      relations: { otp: true },
+    });
+
+    if (!user) throw new NotFoundException(UserMessage.NotFound);
+
+    let pendingEmail: string | undefined = undefined;
+
+    //* Check email existence
+    if (email) {
+      await this.changeEmail(user, email);
+      pendingEmail = email;
+
+      delete dto.email;
+    }
+
+    Object.assign(user, dto, { pendingEmail });
+    return this.saveChanges(user);
+  }
+
+  private async changeEmail(user: UserEntity, email: string) {
+    const doesEmailExists = await this.repository.existsBy({ email });
+
+    if (doesEmailExists) {
+      throw new ConflictException(UserMessage.DuplicateEmail);
+    }
+
+    //* Create new otp
+    await this.otpService.update(user.otp?.id!, { isNewRequest: true });
   }
 }
 

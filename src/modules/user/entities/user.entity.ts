@@ -24,6 +24,9 @@ class UserEntity extends BaseEntity {
   @Column("varchar", { length: 150, unique: true, nullable: true })
   email?: string;
 
+  @Column("varchar", { length: 150, unique: true, nullable: true })
+  pendingEmail?: string;
+
   @Column("varchar", {
     name: "phone_number",
     length: 11,
@@ -34,6 +37,12 @@ class UserEntity extends BaseEntity {
 
   @Column("varchar", { length: 150, nullable: true })
   password?: string;
+
+  @Column("bool", { default: false })
+  isEmailVerified: boolean;
+
+  @Column("bool", { default: false })
+  isPhoneNumberVerified: boolean;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;

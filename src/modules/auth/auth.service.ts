@@ -52,7 +52,7 @@ class AuthService {
 
       await this.otpService.update(otp.id, { isNewRequest: true });
     } else {
-      await this.otpService.create({ userId: user.id });
+      await this.otpService.create({ userId: user.id, method: authMethod });
     }
 
     return user;
@@ -76,6 +76,18 @@ class AuthService {
     if (otp.code !== code) {
       await this.otpService.update(otp.id, { isCodeInvalid: true });
       throw new UnauthorizedException(AuthMessage.InvalidOtp);
+    }
+
+    const verificationMap = {
+      [AuthMethod.Email]: "isEmailVerified",
+      [AuthMethod.PhoneNumber]: "isPhoneNumberVerified",
+    };
+
+    //* Update verification field only if auth method is not user name
+    if (otp.method !== AuthMethod.UserName) {
+      await this.userService.update(user.id, {
+        [verificationMap[otp.method]]: true,
+      });
     }
 
     await this.otpService.update(otp.id, { verify: true });
