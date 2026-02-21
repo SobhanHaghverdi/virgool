@@ -9,6 +9,7 @@ import TypeormConfig from "src/config/typeorm.config";
 import CategoryModule from "../category/category.module";
 import BlogLikeModule from "../blog-like/blog-like.module";
 import UserProfileModule from "../user-profile/user-profile.module";
+import BlogBookmarkModule from "../blog-bookmark/blog-bookmark.module";
 import { type MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
 
@@ -21,6 +22,7 @@ import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
     CategoryModule,
     BlogLikeModule,
     UserProfileModule,
+    BlogBookmarkModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,
       inject: [TypeormConfig],

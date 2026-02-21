@@ -4,6 +4,7 @@ import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
 import BlogLikeEntity from "../blog-like/blog-like.entity";
 import { BaseEntity } from "src/common/abstracts/base.entity";
+import BlogBookmarkEntity from "../blog-bookmark/blog-bookmark.entity";
 
 import {
   Column,
@@ -50,6 +51,12 @@ class BlogEntity extends BaseEntity {
     onDelete: "SET NULL",
   })
   likes?: BlogLikeEntity[];
+
+  @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.blog, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  bookmarks?: BlogBookmarkEntity[];
 }
 
 export default BlogEntity;
