@@ -1,6 +1,7 @@
 import { join } from "path";
 import OtpModule from "../otp/otp.module";
 import UserModule from "../user/user.module";
+import BlogModule from "../blog/blog.module";
 import AuthModule from "../auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -14,6 +15,7 @@ import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
   imports: [
     OtpModule,
     UserModule,
+    BlogModule,
     AuthModule,
     CategoryModule,
     UserProfileModule,

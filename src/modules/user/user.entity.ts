@@ -1,3 +1,4 @@
+import BlogEntity from "../blog/blog.entity";
 import OtpEntity from "src/modules/otp/otp.entity";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
@@ -75,6 +76,12 @@ class UserEntity extends BaseEntity {
     onDelete: "SET NULL",
   })
   profile?: UserProfileEntity;
+
+  @OneToMany(() => BlogEntity, (blog) => blog.author, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  blogs?: BlogEntity[];
 }
 
 export default UserEntity;
