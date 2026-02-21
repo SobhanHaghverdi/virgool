@@ -17,6 +17,16 @@ class CreateUserDto {
   phoneNumber?: string;
 }
 
-class UpdateUserDto extends PartialType(CreateUserDto) {}
+class UpdateUserDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(150)
+  @Transform((email) => email?.value?.toLowerCase())
+  @ApiPropertyOptional({ default: "", maxLength: 150 })
+  pendingEmail?: string;
+
+  isEmailVerified?: boolean;
+  isPhoneNumberVerified?: boolean;
+}
 
 export { CreateUserDto, UpdateUserDto };

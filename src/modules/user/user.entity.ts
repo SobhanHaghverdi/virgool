@@ -31,7 +31,7 @@ class UserEntity extends BaseEntity {
     nullable: true,
     name: "pending_email",
   })
-  pendingEmail?: string;
+  pendingEmail?: string | null;
 
   @Column("varchar", {
     name: "phone_number",

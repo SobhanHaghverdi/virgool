@@ -67,34 +67,42 @@ class UserService extends BaseService<UserEntity> {
   }
 
   async update(id: Id, dto: UpdateUserDto) {
-    const { email = undefined } = dto;
     const user = await this.repository.findOneBy({ id });
-
     if (!user) throw new NotFoundException(UserMessage.NotFound);
 
-    let pendingEmail: string | undefined = undefined;
+    //* Check for email change or verification
+    await this.changeOrVerifyEmail(user, dto);
 
-    //* Check email existence
-    if (email && user.email !== email) {
-      await this.changeEmail(user.id, email);
-      pendingEmail = email;
-
-      delete dto.email;
-    }
-
-    Object.assign(user, dto, { pendingEmail });
+    Object.assign(user, dto);
     return this.saveChanges(user);
   }
 
-  private async changeEmail(userId: Id, email: string) {
-    const doesEmailExists = await this.repository.existsBy({ email });
+  private async changeOrVerifyEmail(user: UserEntity, dto: UpdateUserDto) {
+    const { pendingEmail = undefined, isEmailVerified = undefined } = dto;
 
-    if (doesEmailExists) {
-      throw new ConflictException(UserMessage.DuplicateEmail);
+    //* Verify pending email
+    if (isEmailVerified !== undefined && isEmailVerified && user.pendingEmail) {
+      user.email = user.pendingEmail;
+      user.pendingEmail = null;
+
+      delete dto.pendingEmail;
     }
+    //* Check email update
+    else if (pendingEmail && user.email !== pendingEmail) {
+      const doesEmailExists = await this.repository.exists({
+        where: [{ email: pendingEmail }, { pendingEmail }],
+      });
 
-    //* Create new otp
-    await this.authService.authenticate({ identifier: email, userId });
+      if (doesEmailExists) {
+        throw new ConflictException(UserMessage.DuplicateEmail);
+      }
+
+      //* Create new otp
+      await this.authService.authenticate({
+        userId: user.id,
+        identifier: pendingEmail,
+      });
+    } else delete dto.pendingEmail;
   }
 }
 
