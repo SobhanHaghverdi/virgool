@@ -2,9 +2,9 @@ import UserEntity from "./user.entity";
 import { UserMessage } from "./user.message";
 import AuthService from "../auth/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
 import { AuthMethod } from "../auth/enums/auth.enum";
 import type { Id } from "src/common/types/entity.type";
+import { EntityManager, Not, Repository } from "typeorm";
 import type { CreateUserDto, UpdateUserDto } from "./user.dto";
 import { BaseService } from "src/common/abstracts/base.service";
 
@@ -67,8 +67,22 @@ class UserService extends BaseService<UserEntity> {
   }
 
   async update(id: Id, dto: UpdateUserDto) {
+    const { userName = undefined } = dto;
+
     const user = await this.repository.findOneBy({ id });
     if (!user) throw new NotFoundException(UserMessage.NotFound);
+
+    //* Check user name existence
+    if (userName && user.userName !== userName) {
+      const doesUserNameExists = await this.repository.existsBy({
+        userName,
+        id: Not(id),
+      });
+
+      if (doesUserNameExists) {
+        throw new ConflictException(UserMessage.DuplicateUserName);
+      }
+    }
 
     //* Check for email, phone number change or verification
     await this.changeOrVerifyEmail(user, dto);
@@ -91,7 +105,11 @@ class UserService extends BaseService<UserEntity> {
     //* Check email update
     else if (pendingEmail && user.email !== pendingEmail) {
       const doesEmailExists = await this.repository.exists({
-        where: [{ email: pendingEmail }, { pendingEmail }],
+        where: [
+          { pendingEmail },
+          { email: pendingEmail },
+          { id: Not(user.id) },
+        ],
       });
 
       if (doesEmailExists) {
@@ -129,7 +147,11 @@ class UserService extends BaseService<UserEntity> {
     //* Check phone number update
     else if (pendingPhoneNumber && user.phoneNumber !== pendingPhoneNumber) {
       const doesPhoneNumberExists = await this.repository.exists({
-        where: [{ phoneNumber: pendingPhoneNumber }, { pendingPhoneNumber }],
+        where: [
+          { pendingPhoneNumber },
+          { phoneNumber: pendingPhoneNumber },
+          { id: Not(user.id) },
+        ],
       });
 
       if (doesPhoneNumberExists) {

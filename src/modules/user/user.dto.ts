@@ -29,6 +29,13 @@ class UpdateUserDto {
   @ApiPropertyOptional({ default: "", maxLength: 11 })
   pendingPhoneNumber?: string;
 
+  @IsString()
+  @IsOptional()
+  @MaxLength(150)
+  @ApiPropertyOptional({ default: "", maxLength: 150 })
+  @Transform((userName) => userName?.value?.toLowerCase())
+  userName?: string;
+
   isEmailVerified?: boolean;
   isPhoneNumberVerified?: boolean;
 }
