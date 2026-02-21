@@ -70,8 +70,9 @@ class UserService extends BaseService<UserEntity> {
     const user = await this.repository.findOneBy({ id });
     if (!user) throw new NotFoundException(UserMessage.NotFound);
 
-    //* Check for email change or verification
+    //* Check for email, phone number change or verification
     await this.changeOrVerifyEmail(user, dto);
+    await this.changeOrVerifyPhoneNumber(user, dto);
 
     Object.assign(user, dto);
     return this.saveChanges(user);
@@ -103,6 +104,44 @@ class UserService extends BaseService<UserEntity> {
         identifier: pendingEmail,
       });
     } else delete dto.pendingEmail;
+  }
+
+  private async changeOrVerifyPhoneNumber(
+    user: UserEntity,
+    dto: UpdateUserDto,
+  ) {
+    const {
+      pendingPhoneNumber = undefined,
+      isPhoneNumberVerified = undefined,
+    } = dto;
+
+    //* Verify pending phone number
+    if (
+      isPhoneNumberVerified !== undefined &&
+      isPhoneNumberVerified &&
+      user.pendingPhoneNumber
+    ) {
+      user.phoneNumber = user.pendingPhoneNumber;
+      user.pendingPhoneNumber = null;
+
+      delete dto.pendingPhoneNumber;
+    }
+    //* Check phone number update
+    else if (pendingPhoneNumber && user.phoneNumber !== pendingPhoneNumber) {
+      const doesPhoneNumberExists = await this.repository.exists({
+        where: [{ phoneNumber: pendingPhoneNumber }, { pendingPhoneNumber }],
+      });
+
+      if (doesPhoneNumberExists) {
+        throw new ConflictException(UserMessage.DuplicatePhoneNumber);
+      }
+
+      //* Create new otp
+      await this.authService.authenticate({
+        userId: user.id,
+        identifier: pendingPhoneNumber,
+      });
+    } else delete dto.pendingPhoneNumber;
   }
 }
 

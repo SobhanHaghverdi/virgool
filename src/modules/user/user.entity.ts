@@ -34,6 +34,14 @@ class UserEntity extends BaseEntity {
   pendingEmail?: string | null;
 
   @Column("varchar", {
+    length: 11,
+    unique: true,
+    nullable: true,
+    name: "pending_phone_number",
+  })
+  pendingPhoneNumber?: string | null;
+
+  @Column("varchar", {
     name: "phone_number",
     length: 11,
     unique: true,
