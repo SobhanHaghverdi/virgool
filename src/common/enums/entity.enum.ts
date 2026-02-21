@@ -3,6 +3,7 @@ enum EntityName {
   Blog = "blog",
   User = "user",
   Category = "category",
+  BlogLike = "blog_like",
   UserProfile = "user_profile",
 }
 

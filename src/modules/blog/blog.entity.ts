@@ -2,12 +2,14 @@ import UserEntity from "../user/user.entity";
 import { BlogStatus } from "./enums/blog.enum";
 import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
+import BlogLikeEntity from "../blog-like/blog-like.entity";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 
 import {
   Column,
   Entity,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
@@ -42,6 +44,12 @@ class BlogEntity extends BaseEntity {
   @JoinColumn({ name: "author_id" })
   @ManyToOne(() => UserEntity, (user) => user.blogs, { onDelete: "CASCADE" })
   author: UserEntity;
+
+  @OneToMany(() => BlogLikeEntity, (like) => like.blog, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  likes?: BlogLikeEntity[];
 }
 
 export default BlogEntity;
