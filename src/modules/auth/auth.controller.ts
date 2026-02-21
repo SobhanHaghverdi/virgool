@@ -16,9 +16,9 @@ class AuthController {
 
   @Post("authenticate")
   @ApiMessage(AuthSwaggerMessage.Authenticate)
-  async authenticate(@Body() dto: AuthDto): ApiResponse<number> {
+  async authenticate(@Body() dto: AuthDto): ApiResponse<object> {
     const user = await this.authService.authenticate(dto);
-    return ResponseBuilder.ok(user.id, AuthMessage.SendOtp);
+    return ResponseBuilder.ok(user, AuthMessage.SendOtp);
   }
 
   @Post("verify-otp")

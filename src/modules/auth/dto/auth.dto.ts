@@ -1,9 +1,20 @@
-import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
+import { ApiProperty } from "@nestjs/swagger";
+import { AuthMethod } from "../enums/auth.enum";
 import type { Id } from "src/common/types/entity.type";
-import { IsNotEmpty, IsString, Length } from "class-validator";
+
+import {
+  IsEnum,
+  Length,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+} from "class-validator";
 
 class AuthDto {
+  @IsOptional()
+  userId?: Id;
+
   @IsString()
   @IsNotEmpty()
   @Length(3, 150)
@@ -21,6 +32,11 @@ class VerifyOtpDto {
   @IsNotEmpty()
   @ApiProperty({ default: "", type: "integer" })
   userId: Id;
+
+  @IsNotEmpty()
+  @IsEnum(AuthMethod)
+  @ApiProperty({ default: "", enum: AuthMethod })
+  authMethod: AuthMethod;
 
   @IsString()
   @IsNotEmpty()

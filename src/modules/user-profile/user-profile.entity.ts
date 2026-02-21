@@ -1,5 +1,5 @@
 import Gender from "./enums/gender.enum";
-import UserEntity from "../user/entities/user.entity";
+import UserEntity from "../user/user.entity";
 import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";

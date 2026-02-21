@@ -1,7 +1,7 @@
+import UserEntity from "./user.entity";
 import UserService from "./user.service";
 import AuthModule from "../auth/auth.module";
 import UserController from "./user.controller";
-import UserEntity from "./entities/user.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Module, forwardRef } from "@nestjs/common";
 import UserProfileModule from "../user-profile/user-profile.module";

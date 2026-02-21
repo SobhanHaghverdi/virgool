@@ -1,6 +1,6 @@
-import OtpService from "../otp/otp.service";
+import UserEntity from "./user.entity";
 import { UserMessage } from "./user.message";
-import UserEntity from "./entities/user.entity";
+import AuthService from "../auth/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import { AuthMethod } from "../auth/enums/auth.enum";
@@ -9,7 +9,9 @@ import type { CreateUserDto, UpdateUserDto } from "./user.dto";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
+  Inject,
   Injectable,
+  forwardRef,
   ConflictException,
   NotFoundException,
   BadRequestException,
@@ -17,20 +19,20 @@ import {
 
 @Injectable()
 class UserService extends BaseService<UserEntity> {
-  private readonly otpService: OtpService;
+  private readonly authService: AuthService;
 
   constructor(
-    otpService: OtpService,
+    @Inject(forwardRef(() => AuthService)) authService: AuthService,
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
   ) {
     super(userRepository);
-    this.otpService = otpService;
+    this.authService = authService;
   }
 
   async getById(id: Id) {
     return this.repository.findOne({
       where: { id },
-      relations: { otp: true, profile: true },
+      relations: { otps: true },
     });
   }
 
@@ -66,19 +68,15 @@ class UserService extends BaseService<UserEntity> {
 
   async update(id: Id, dto: UpdateUserDto) {
     const { email = undefined } = dto;
-
-    const user = await this.repository.findOne({
-      where: { id },
-      relations: { otp: true },
-    });
+    const user = await this.repository.findOneBy({ id });
 
     if (!user) throw new NotFoundException(UserMessage.NotFound);
 
     let pendingEmail: string | undefined = undefined;
 
     //* Check email existence
-    if (email) {
-      await this.changeEmail(user, email);
+    if (email && user.email !== email) {
+      await this.changeEmail(user.id, email);
       pendingEmail = email;
 
       delete dto.email;
@@ -88,7 +86,7 @@ class UserService extends BaseService<UserEntity> {
     return this.saveChanges(user);
   }
 
-  private async changeEmail(user: UserEntity, email: string) {
+  private async changeEmail(userId: Id, email: string) {
     const doesEmailExists = await this.repository.existsBy({ email });
 
     if (doesEmailExists) {
@@ -96,7 +94,7 @@ class UserService extends BaseService<UserEntity> {
     }
 
     //* Create new otp
-    await this.otpService.update(user.otp?.id!, { isNewRequest: true });
+    await this.authService.authenticate({ identifier: email, userId });
   }
 }
 

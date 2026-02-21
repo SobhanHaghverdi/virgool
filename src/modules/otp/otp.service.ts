@@ -5,6 +5,7 @@ import { OtpValidation } from "./enums/otp.enum";
 import { OtpGeneration } from "./types/otp.type";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
+import { AuthMethod } from "../auth/enums/auth.enum";
 import DateHelper from "src/common/utils/date-helper";
 import type { Id } from "src/common/types/entity.type";
 import type { CreateOtpDto, UpdateOtpDto } from "./dto/otp.dto";
@@ -24,8 +25,8 @@ class OtpService extends BaseService<OtpEntity> {
     super(otpRepository);
   }
 
-  async getByUserId(userId: Id) {
-    return this.repository.findOneBy({ userId });
+  async getByUserId(userId: Id, method?: AuthMethod | undefined) {
+    return this.repository.findOneBy({ userId, method });
   }
 
   async getByCode(code: string) {
@@ -33,9 +34,12 @@ class OtpService extends BaseService<OtpEntity> {
   }
 
   async create(dto: CreateOtpDto, entityManager?: EntityManager) {
+    const { method, userId } = dto;
+
     const manager = entityManager ?? this.repository.manager;
     const doesOtpExists = await manager.existsBy(OtpEntity, {
-      userId: dto.userId,
+      userId,
+      method,
     });
 
     if (doesOtpExists) throw new ConflictException(OtpMessage.Duplicate);

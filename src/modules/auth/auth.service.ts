@@ -1,15 +1,21 @@
 import { JwtService } from "@nestjs/jwt";
 import OtpService from "../otp/otp.service";
 import { AuthMessage } from "./auth.message";
+import UserEntity from "../user/user.entity";
 import UserService from "../user/user.service";
-import UserEntity from "../user/entities/user.entity";
 import DateHelper from "src/common/utils/date-helper";
 import { OtpValidation } from "../otp/enums/otp.enum";
 import { isEmail, isMobilePhone } from "class-validator";
 import type { AccessTokenPayload } from "./types/auth.type";
 import type { AuthDto, VerifyOtpDto } from "./dto/auth.dto";
 import { AuthMethod, JwtExpiration } from "./enums/auth.enum";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+
+import {
+  Inject,
+  Injectable,
+  forwardRef,
+  UnauthorizedException,
+} from "@nestjs/common";
 
 @Injectable()
 class AuthService {
@@ -20,25 +26,31 @@ class AuthService {
   constructor(
     otpService: OtpService,
     jwtService: JwtService,
-    userService: UserService,
+    @Inject(forwardRef(() => UserService)) userService: UserService,
   ) {
     this.otpService = otpService;
     this.jwtService = jwtService;
     this.userService = userService;
   }
 
-  async authenticate(dto: AuthDto): Promise<UserEntity> {
-    const { identifier } = dto;
+  async authenticate(dto: AuthDto) {
+    const { identifier, userId = undefined } = dto;
     const authMethod = this.detectIdentifierType(identifier);
 
-    let user = await this.userService.getByAuthMethod(authMethod, identifier);
+    let user: UserEntity | null;
+
+    if (userId) {
+      user = await this.userService.getById(userId);
+    } else {
+      user = await this.userService.getByAuthMethod(authMethod, identifier);
+    }
 
     if (!user) {
       user = await this.register(authMethod, identifier);
     }
 
     //* Create or update otp
-    const otp = await this.otpService.getByUserId(user.id);
+    const otp = await this.otpService.getByUserId(user.id, authMethod);
 
     if (otp) {
       const limitationDate = DateHelper.addMinute(
@@ -55,18 +67,18 @@ class AuthService {
       await this.otpService.create({ userId: user.id, method: authMethod });
     }
 
-    return user;
+    return { userId: user.id, authMethod };
   }
 
   async verifyOtp(dto: VerifyOtpDto): Promise<string> {
-    const { code, userId } = dto;
+    const { code, userId, authMethod } = dto;
     const user = await this.userService.getById(userId);
 
-    if (!user || !user.otp) {
+    const otp = user?.otps?.find((otp) => otp.method === authMethod);
+
+    if (!user || !otp) {
       throw new UnauthorizedException(AuthMessage.Unauthorized);
     }
-
-    const otp = user.otp;
 
     //* Validate
     if (otp.expiresAt < new Date()) {
@@ -84,9 +96,9 @@ class AuthService {
     };
 
     //* Update verification field only if auth method is not user name
-    if (otp.method !== AuthMethod.UserName) {
+    if (authMethod !== AuthMethod.UserName) {
       await this.userService.update(user.id, {
-        [verificationMap[otp.method]]: true,
+        [verificationMap[authMethod]]: true,
       });
     }
 
@@ -101,10 +113,7 @@ class AuthService {
 
       const user = await this.userService.getById(payload?.userId);
 
-      if (
-        !user ||
-        (payload.profileId && user.profile?.id !== payload.profileId)
-      ) {
+      if (!user) {
         throw new UnauthorizedException(AuthMessage.Unauthorized);
       }
 
@@ -119,7 +128,6 @@ class AuthService {
       {
         userId: user.id,
         userName: user.userName,
-        profileId: user.profile?.id,
       },
       { expiresIn: JwtExpiration.AccessToken },
     );

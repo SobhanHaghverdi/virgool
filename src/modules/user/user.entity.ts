@@ -7,6 +7,7 @@ import {
   Column,
   Entity,
   OneToOne,
+  OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -24,7 +25,12 @@ class UserEntity extends BaseEntity {
   @Column("varchar", { length: 150, unique: true, nullable: true })
   email?: string;
 
-  @Column("varchar", { length: 150, unique: true, nullable: true })
+  @Column("varchar", {
+    length: 150,
+    unique: true,
+    nullable: true,
+    name: "pending_email",
+  })
   pendingEmail?: string;
 
   @Column("varchar", {
@@ -38,10 +44,10 @@ class UserEntity extends BaseEntity {
   @Column("varchar", { length: 150, nullable: true })
   password?: string;
 
-  @Column("bool", { default: false })
+  @Column("bool", { default: false, name: "is_email_verified" })
   isEmailVerified: boolean;
 
-  @Column("bool", { default: false })
+  @Column("bool", { default: false, name: "is_phone_number_verified" })
   isPhoneNumberVerified: boolean;
 
   @CreateDateColumn({ name: "created_at" })
@@ -50,11 +56,11 @@ class UserEntity extends BaseEntity {
   @UpdateDateColumn({ name: "updated_at" })
   updatedAt: Date;
 
-  @OneToOne(() => OtpEntity, (otp) => otp.user, {
+  @OneToMany(() => OtpEntity, (otp) => otp.user, {
     onDelete: "SET NULL",
     nullable: true,
   })
-  otp?: OtpEntity;
+  otps?: OtpEntity[];
 
   @OneToOne(() => UserProfileEntity, (profile) => profile.user, {
     nullable: true,
