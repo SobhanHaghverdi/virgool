@@ -1,30 +1,38 @@
+import UserEntity from "./user.entity";
 import { UserMessage } from "./user.message";
-import UserEntity from "./entities/user.entity";
-import type { CreateUserDto } from "./user.dto";
+import AuthService from "../auth/auth.service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, Repository } from "typeorm";
 import { AuthMethod } from "../auth/enums/auth.enum";
 import type { Id } from "src/common/types/entity.type";
+import { EntityManager, Not, Repository } from "typeorm";
+import type { CreateUserDto, UpdateUserDto } from "./user.dto";
 import { BaseService } from "src/common/abstracts/base.service";
 
 import {
+  Inject,
   Injectable,
+  forwardRef,
   ConflictException,
+  NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
 
 @Injectable()
 class UserService extends BaseService<UserEntity> {
+  private readonly authService: AuthService;
+
   constructor(
+    @Inject(forwardRef(() => AuthService)) authService: AuthService,
     @InjectRepository(UserEntity) userRepository: Repository<UserEntity>,
   ) {
     super(userRepository);
+    this.authService = authService;
   }
 
   async getById(id: Id) {
     return this.repository.findOne({
       where: { id },
-      relations: { otp: true, profile: true },
+      relations: { otps: true },
     });
   }
 
@@ -56,6 +64,106 @@ class UserService extends BaseService<UserEntity> {
     //* Generate user name
     user.userName = `m_${user.id}`;
     return this.saveChanges(user, manager);
+  }
+
+  async update(id: Id, dto: UpdateUserDto) {
+    const { userName = undefined } = dto;
+
+    const user = await this.repository.findOneBy({ id });
+    if (!user) throw new NotFoundException(UserMessage.NotFound);
+
+    //* Check user name existence
+    if (userName && user.userName !== userName) {
+      const doesUserNameExists = await this.repository.existsBy({
+        userName,
+        id: Not(id),
+      });
+
+      if (doesUserNameExists) {
+        throw new ConflictException(UserMessage.DuplicateUserName);
+      }
+    }
+
+    //* Check for email, phone number change or verification
+    await this.changeOrVerifyEmail(user, dto);
+    await this.changeOrVerifyPhoneNumber(user, dto);
+
+    Object.assign(user, dto);
+    return this.saveChanges(user);
+  }
+
+  private async changeOrVerifyEmail(user: UserEntity, dto: UpdateUserDto) {
+    const { pendingEmail = undefined, isEmailVerified = undefined } = dto;
+
+    //* Verify pending email
+    if (isEmailVerified !== undefined && isEmailVerified && user.pendingEmail) {
+      user.email = user.pendingEmail;
+      user.pendingEmail = null;
+
+      delete dto.pendingEmail;
+    }
+    //* Check email update
+    else if (pendingEmail && user.email !== pendingEmail) {
+      const doesEmailExists = await this.repository.exists({
+        where: [
+          { pendingEmail },
+          { email: pendingEmail },
+          { id: Not(user.id) },
+        ],
+      });
+
+      if (doesEmailExists) {
+        throw new ConflictException(UserMessage.DuplicateEmail);
+      }
+
+      //* Create new otp
+      await this.authService.authenticate({
+        userId: user.id,
+        identifier: pendingEmail,
+      });
+    } else delete dto.pendingEmail;
+  }
+
+  private async changeOrVerifyPhoneNumber(
+    user: UserEntity,
+    dto: UpdateUserDto,
+  ) {
+    const {
+      pendingPhoneNumber = undefined,
+      isPhoneNumberVerified = undefined,
+    } = dto;
+
+    //* Verify pending phone number
+    if (
+      isPhoneNumberVerified !== undefined &&
+      isPhoneNumberVerified &&
+      user.pendingPhoneNumber
+    ) {
+      user.phoneNumber = user.pendingPhoneNumber;
+      user.pendingPhoneNumber = null;
+
+      delete dto.pendingPhoneNumber;
+    }
+    //* Check phone number update
+    else if (pendingPhoneNumber && user.phoneNumber !== pendingPhoneNumber) {
+      const doesPhoneNumberExists = await this.repository.exists({
+        where: [
+          { pendingPhoneNumber },
+          { phoneNumber: pendingPhoneNumber },
+          { id: Not(user.id) },
+        ],
+      });
+
+      if (doesPhoneNumberExists) {
+        throw new ConflictException(UserMessage.DuplicatePhoneNumber);
+      }
+
+      //* Create new otp
+      await this.authService.authenticate({
+        userId: user.id,
+        identifier: pendingPhoneNumber,
+      });
+    } else delete dto.pendingPhoneNumber;
   }
 }
 

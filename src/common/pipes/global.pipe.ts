@@ -2,6 +2,7 @@ import { BadRequestException, ValidationPipe } from "@nestjs/common";
 
 const validationPipe = new ValidationPipe({
   transform: true,
+  whitelist: true,
   exceptionFactory: (errors) => {
     const error = Object.values(errors[0].constraints ?? {})?.[0];
     return new BadRequestException(error);

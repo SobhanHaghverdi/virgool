@@ -1,9 +1,13 @@
 import type { Request } from "express";
 import UserService from "./user.service";
+import { UpdateUserDto } from "./user.dto";
+import type UserEntity from "./user.entity";
 import { ApiConsumes } from "@nestjs/swagger";
+import type { Id } from "src/common/types/entity.type";
 import { FileFormat } from "src/common/enums/file.enum";
 import ApiAuth from "src/common/decorators/api-auth.decorator";
 import ResponseBuilder from "src/common/utils/response-builder";
+import { UserMessage, UserSwaggerMessage } from "./user.message";
 import SwaggerConsume from "src/common/enums/swagger-consume.enum";
 import ApiMessage from "src/common/decorators/api-message.decorator";
 import UserProfileService from "../user-profile/user-profile.service";
@@ -27,7 +31,9 @@ import {
   Req,
   Body,
   Patch,
+  Param,
   Controller,
+  ParseIntPipe,
   ParseFilePipe,
   UploadedFiles,
 } from "@nestjs/common";
@@ -80,6 +86,28 @@ class UserController {
     );
 
     return ResponseBuilder.ok(userProfile, UserProfileMessage.Upsert);
+  }
+
+  @Patch()
+  @ApiAuth()
+  @ApiMessage(UserSwaggerMessage.Update)
+  async updateCurrentUser(
+    @Req() req: Request,
+    @Body() dto: UpdateUserDto,
+  ): ApiResponse<UserEntity> {
+    const user = await this.userService.update(req.user!.userId, dto);
+    return ResponseBuilder.ok(user, UserMessage.Updated);
+  }
+
+  @Patch(":id")
+  @ApiAuth()
+  @ApiMessage(UserSwaggerMessage.Update)
+  async update(
+    @Body() dto: UpdateUserDto,
+    @Param("id", ParseIntPipe) id: Id,
+  ): ApiResponse<UserEntity> {
+    const user = await this.userService.update(id, dto);
+    return ResponseBuilder.ok(user, UserMessage.Updated);
   }
 }
 

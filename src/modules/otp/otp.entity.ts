@@ -1,4 +1,5 @@
-import UserEntity from "../user/entities/user.entity";
+import UserEntity from "../user/user.entity";
+import { AuthMethod } from "../auth/enums/auth.enum";
 import type { Id } from "src/common/types/entity.type";
 import { EntityName } from "src/common/enums/entity.enum";
 import { BaseEntity } from "src/common/abstracts/base.entity";
@@ -6,7 +7,7 @@ import { BaseEntity } from "src/common/abstracts/base.entity";
 import {
   Column,
   Entity,
-  OneToOne,
+  ManyToOne,
   JoinColumn,
   CreateDateColumn,
 } from "typeorm";
@@ -19,7 +20,7 @@ class OtpEntity extends BaseEntity {
   @Column("timestamp without time zone", { name: "expires_at" })
   expiresAt: Date;
 
-  @Column("int", { name: "user_id", unique: true })
+  @Column("int", { name: "user_id" })
   userId: Id;
 
   @CreateDateColumn({ name: "last_sent_at" })
@@ -43,11 +44,14 @@ class OtpEntity extends BaseEntity {
   @Column("int", { default: 0, name: "total_failed_attempts" })
   totalFailedAttempts: number;
 
+  @Column("enum", { enum: AuthMethod })
+  method: AuthMethod;
+
   @CreateDateColumn({ name: "created_at" })
   createdAt: Date;
 
   @JoinColumn({ name: "user_id" })
-  @OneToOne(() => UserEntity, (user) => user.otp, { onDelete: "CASCADE" })
+  @ManyToOne(() => UserEntity, (user) => user.otps, { onDelete: "CASCADE" })
   user: UserEntity;
 }
 

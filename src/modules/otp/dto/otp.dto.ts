@@ -1,9 +1,14 @@
 import type { Id } from "src/common/types/entity.type";
-import { IsNotEmpty, IsBoolean, IsOptional } from "class-validator";
+import { AuthMethod } from "src/modules/auth/enums/auth.enum";
+import { IsNotEmpty, IsBoolean, IsOptional, IsEnum } from "class-validator";
 
 class CreateOtpDto {
   @IsNotEmpty()
   userId: Id;
+
+  @IsNotEmpty()
+  @IsEnum(AuthMethod)
+  method: AuthMethod;
 }
 
 class UpdateOtpDto {
