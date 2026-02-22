@@ -6,6 +6,7 @@ import BlogLikeEntity from "../blog-like/blog-like.entity";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 import BlogCommentEntity from "../blog-comment/blog-comment.entity";
 import BlogBookmarkEntity from "../blog-bookmark/blog-bookmark.entity";
+import BlogCategoryEntity from "../blog-category/blog-category.entity";
 
 import {
   Column,
@@ -72,6 +73,11 @@ class BlogEntity extends BaseEntity {
     onDelete: "SET NULL",
   })
   comments?: BlogCommentEntity[];
+
+  @OneToMany(() => BlogCategoryEntity, (category) => category.blog, {
+    onDelete: "SET NULL",
+  })
+  categories: BlogCategoryEntity[];
 
   //#endregion
 }
