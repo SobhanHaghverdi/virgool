@@ -1,6 +1,10 @@
+import BlogEntity from "../blog/blog.entity";
 import OtpEntity from "src/modules/otp/otp.entity";
 import { EntityName } from "src/common/enums/entity.enum";
+import BlogLikeEntity from "../blog-like/blog-like.entity";
 import { BaseEntity } from "src/common/abstracts/base.entity";
+import BlogCommentEntity from "../blog-comment/blog-comment.entity";
+import BlogBookmarkEntity from "../blog-bookmark/blog-bookmark.entity";
 import UserProfileEntity from "src/modules/user-profile/user-profile.entity";
 
 import {
@@ -75,6 +79,30 @@ class UserEntity extends BaseEntity {
     onDelete: "SET NULL",
   })
   profile?: UserProfileEntity;
+
+  @OneToMany(() => BlogEntity, (blog) => blog.author, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  blogs?: BlogEntity[];
+
+  @OneToMany(() => BlogLikeEntity, (like) => like.user, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  likes?: BlogLikeEntity[];
+
+  @OneToMany(() => BlogBookmarkEntity, (bookmark) => bookmark.user, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  bookmarks?: BlogBookmarkEntity[];
+
+  @OneToMany(() => BlogCommentEntity, (comment) => comment.user, {
+    nullable: true,
+    onDelete: "SET NULL",
+  })
+  comments?: BlogCommentEntity[];
 }
 
 export default UserEntity;
