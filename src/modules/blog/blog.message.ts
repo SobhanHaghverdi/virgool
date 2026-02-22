@@ -6,9 +6,15 @@ enum BlogMessage {
   DuplicateTitle = "عنوان بلاگ از قبل وجود دارد.",
 }
 
-type BlogMessageKey = "Create";
+type BlogMessageKey = "Create" | "Filter";
 
 const BlogSwaggerMessage: Record<BlogMessageKey, MessageStructure> = {
+  Filter: {
+    summary: "Filter blogs",
+    responses: {
+      success: "List of filtered blogs",
+    },
+  },
   Create: {
     summary: "Create blog",
     responses: {

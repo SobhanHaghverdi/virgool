@@ -1,14 +1,22 @@
+import type { Id } from "src/common/types/entity.type";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 import {
   Length,
   IsString,
-  IsNumber,
   MaxLength,
   IsNotEmpty,
   IsOptional,
   IsNumberString,
 } from "class-validator";
+
+class FilterBlogDto extends PaginationDto {
+  @IsOptional()
+  @IsNumberString()
+  @ApiPropertyOptional({ default: "", type: "integer" })
+  authorId?: Id;
+}
 
 class CreateBlogDto {
   @IsString()
@@ -45,4 +53,4 @@ class CreateBlogDto {
   image?: string;
 }
 
-export { CreateBlogDto };
+export { CreateBlogDto, FilterBlogDto };
