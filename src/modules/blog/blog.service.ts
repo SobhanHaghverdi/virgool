@@ -29,18 +29,33 @@ class BlogService extends BaseService<BlogEntity> {
   }
 
   async filter(query: FilterBlogDto) {
-    const { authorId = undefined } = query;
-    const conditions: FindOptionsWhere<BlogEntity> = {};
+    let { search = undefined, authorId = undefined } = query;
+    let conditions = "";
 
     const { limit, pageNumber, skip } = Pagination.solve(query);
-    if (authorId) conditions.authorId = authorId;
 
-    const [blogs, totalCount] = await this.repository.findAndCount({
-      skip,
-      take: limit,
-      where: conditions,
-      order: { id: "DESC" },
-    });
+    if (search) {
+      search = `%${search}%`;
+
+      conditions +=
+        "CONCAT(blog.title, blog.shortDescription, blog.description, category.title) ILIKE :search";
+    }
+
+    if (authorId) {
+      if (conditions.length > 0) conditions += " AND ";
+      conditions += "blog.authorId= :authorId";
+    }
+
+    const [blogs, totalCount] = await this.repository
+      .createQueryBuilder("blog")
+      .leftJoin("blog.categories", "categories")
+      .leftJoin("categories.category", "category")
+      .addSelect(["categories.id", "category.title"])
+      .where(conditions, { search, authorId })
+      .orderBy("blog.id", "DESC")
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
 
     return {
       data: blogs,

@@ -17,6 +17,11 @@ class FilterBlogDto extends PaginationDto {
   @IsNumberString()
   @ApiPropertyOptional({ default: "", type: "integer" })
   authorId?: Id;
+
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ default: "" })
+  search?: string;
 }
 
 class CreateBlogDto {
