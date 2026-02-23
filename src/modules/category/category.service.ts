@@ -1,6 +1,6 @@
-import { Not, type Repository } from "typeorm";
 import CategoryEntity from "./category.entity";
 import { InjectRepository } from "@nestjs/typeorm";
+import { In, Not, type Repository } from "typeorm";
 import { CategoryMessage } from "./category.message";
 import type { Id } from "src/common/types/entity.type";
 import { Pagination } from "src/common/utils/pagination.util";
@@ -27,6 +27,10 @@ class CategoryService extends BaseService<CategoryEntity> {
     return this.repository.findOneBy({ id });
   }
 
+  async getAllByTitle(titles: string[]) {
+    return this.repository.findBy({ title: In(titles) });
+  }
+
   async filter(query: PaginationDto) {
     const { limit, pageNumber, skip } = Pagination.solve(query);
     const [categories, totalCount] = await this.repository.findAndCount({
@@ -50,6 +54,10 @@ class CategoryService extends BaseService<CategoryEntity> {
     }
 
     return this.createEntity(dto);
+  }
+
+  async bulkCreate(dtos: CreateCategoryDto[]) {
+    return this.bulkInsert(dtos);
   }
 
   async update(id: Id, dto: UpdateCategoryDto) {

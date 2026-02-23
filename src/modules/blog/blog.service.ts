@@ -1,20 +1,31 @@
-import { FindOptionsWhere, Repository } from "typeorm";
 import BlogEntity from "./blog.entity";
 import { BlogMessage } from "./blog.message";
 import { InjectRepository } from "@nestjs/typeorm";
-import type { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
 import type { Id } from "src/common/types/entity.type";
+import CategoryService from "../category/category.service";
+import { FindOptionsWhere, Repository, Not } from "typeorm";
+import { Pagination } from "src/common/utils/pagination.util";
 import { ConflictException, Injectable } from "@nestjs/common";
 import StringHelper from "src/common/utils/string-helper.util";
 import { BaseService } from "src/common/abstracts/base.service";
-import { Pagination } from "src/common/utils/pagination.util";
+import type { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
+import type { CreateCategoryDto } from "../category/dto/category.dto";
+import BlogCategoryService from "../blog-category/blog-category.service";
+import type { CreateBlogCategoryDto } from "../blog-category/dto/blog-category.dto";
 
 @Injectable()
 class BlogService extends BaseService<BlogEntity> {
+  private readonly categoryService: CategoryService;
+  private readonly blogCategoryService: BlogCategoryService;
+
   constructor(
+    categoryService: CategoryService,
+    blogCategoryService: BlogCategoryService,
     @InjectRepository(BlogEntity) blogRepository: Repository<BlogEntity>,
   ) {
     super(blogRepository);
+    this.categoryService = categoryService;
+    this.blogCategoryService = blogCategoryService;
   }
 
   async filter(query: FilterBlogDto) {
@@ -38,28 +49,58 @@ class BlogService extends BaseService<BlogEntity> {
   }
 
   async create(authorId: Id, dto: CreateBlogDto) {
-    const { title } = dto;
-    const slug = StringHelper.createSlug(dto.slug ?? title);
+    let { title, categories } = dto;
+    dto.slug = StringHelper.createSlug(dto.slug ?? title);
 
-    //* Check for duplicate title
-    const doesTitleExists = await this.repository.existsBy({
-      title: title.toLowerCase(),
+    await this.validateFieldsForUpsert(dto);
+    const blog = await this.createEntity({ ...dto, authorId, categories: [] });
+
+    categories = categories.map((c) => c.trim().toLowerCase());
+    const dbCategories = await this.categoryService.getAllByTitle(categories);
+
+    //* Extract new categories
+    const newCategories: CreateCategoryDto[] = categories
+      .filter((c) => !dbCategories.some((dc) => dc.title === c))
+      .map((c) => ({ title: c }));
+
+    //* Create new categories
+    const createdCategories =
+      await this.categoryService.bulkCreate(newCategories);
+
+    dbCategories.push(...createdCategories);
+
+    //* Create new blog categories
+    const newBlogCategories: CreateBlogCategoryDto[] = dbCategories.map(
+      (c) => ({ blogId: blog.id, categoryId: c.id }),
+    );
+
+    await this.blogCategoryService.bulkCreate(newBlogCategories);
+    return blog;
+  }
+
+  private async validateFieldsForUpsert(dto: CreateBlogDto, id: Id = 0) {
+    const { title, slug = undefined } = dto;
+
+    const fixedSlug = slug?.toLowerCase();
+    const fixedTitle = title.toLowerCase();
+
+    //* Check for duplicate title or slug
+    const existing = await this.repository.findOne({
+      where: [
+        { slug: fixedSlug, id: Not(id) },
+        { title: fixedTitle, id: Not(id) },
+      ],
+      select: ["title", "slug"],
     });
 
-    if (doesTitleExists) {
-      throw new ConflictException(BlogMessage.DuplicateTitle);
+    if (existing) {
+      if (existing.title === fixedTitle) {
+        throw new ConflictException(BlogMessage.DuplicateTitle);
+      }
+      if (existing.slug === fixedSlug) {
+        throw new ConflictException(BlogMessage.DuplicateSlug);
+      }
     }
-
-    //* Check for duplicate slug
-    const doesSlugExists = await this.repository.existsBy({
-      slug: slug.toLowerCase(),
-    });
-
-    if (doesSlugExists) {
-      throw new ConflictException(BlogMessage.DuplicateSlug);
-    }
-
-    return this.createEntity({ ...dto, authorId, slug });
   }
 }
 

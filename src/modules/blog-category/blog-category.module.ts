@@ -4,6 +4,7 @@ import BlogCategoryEntity from "./blog-category.entity";
 import BlogCategoryService from "./blog-category.service";
 
 @Module({
+  exports: [BlogCategoryService],
   providers: [BlogCategoryService],
   imports: [TypeOrmModule.forFeature([BlogCategoryEntity])],
 })

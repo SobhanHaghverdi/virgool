@@ -4,6 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 import {
   Length,
+  IsArray,
   IsString,
   MaxLength,
   IsNotEmpty,
@@ -51,6 +52,15 @@ class CreateBlogDto {
   @IsOptional()
   @ApiPropertyOptional({ default: "", format: "binary" })
   image?: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty({
+    minItems: 1,
+    isArray: true,
+    items: { type: "string", default: "" },
+  })
+  categories: string[];
 }
 
 export { CreateBlogDto, FilterBlogDto };
