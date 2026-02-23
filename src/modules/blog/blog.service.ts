@@ -1,17 +1,22 @@
 import BlogEntity from "./blog.entity";
+import { Repository, Not } from "typeorm";
 import { BlogMessage } from "./blog.message";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { Id } from "src/common/types/entity.type";
 import CategoryService from "../category/category.service";
-import { FindOptionsWhere, Repository, Not } from "typeorm";
 import { Pagination } from "src/common/utils/pagination.util";
-import { ConflictException, Injectable } from "@nestjs/common";
 import StringHelper from "src/common/utils/string-helper.util";
 import { BaseService } from "src/common/abstracts/base.service";
 import type { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
 import type { CreateCategoryDto } from "../category/dto/category.dto";
 import BlogCategoryService from "../blog-category/blog-category.service";
 import type { CreateBlogCategoryDto } from "../blog-category/dto/blog-category.dto";
+
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from "@nestjs/common";
 
 @Injectable()
 class BlogService extends BaseService<BlogEntity> {
@@ -91,6 +96,13 @@ class BlogService extends BaseService<BlogEntity> {
 
     await this.blogCategoryService.bulkCreate(newBlogCategories);
     return blog;
+  }
+
+  async deleteById(id: Id) {
+    const blog = await this.repository.findOneBy({ id });
+    if (!blog) throw new NotFoundException(BlogMessage.NotFound);
+
+    return this.repository.remove(blog);
   }
 
   private async validateFieldsForUpsert(dto: CreateBlogDto, id: Id = 0) {
