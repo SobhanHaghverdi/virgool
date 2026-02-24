@@ -1,7 +1,7 @@
+import { Transform } from "class-transformer";
 import type { Id } from "src/common/types/entity.type";
 import { PaginationDto } from "src/common/dto/pagination.dto";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-
+import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
 import {
   Length,
   IsArray,
@@ -28,6 +28,7 @@ class CreateBlogDto {
   @IsString()
   @IsNotEmpty()
   @Length(3, 150)
+  @Transform(({ value }) => value?.toLowerCase())
   @ApiProperty({ default: "", minLength: 3, maxLength: 150 })
   title: string;
 
@@ -40,6 +41,7 @@ class CreateBlogDto {
   @IsString()
   @IsOptional()
   @MaxLength(300)
+  @Transform(({ value }) => value?.toLowerCase())
   @ApiPropertyOptional({ default: "", maxLength: 300 })
   slug?: string;
 
@@ -68,4 +70,6 @@ class CreateBlogDto {
   categories: string[];
 }
 
-export { CreateBlogDto, FilterBlogDto };
+class UpdateBlogDto extends PartialType(CreateBlogDto) {}
+
+export { CreateBlogDto, UpdateBlogDto, FilterBlogDto };

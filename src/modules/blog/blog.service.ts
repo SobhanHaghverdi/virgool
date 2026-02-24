@@ -7,10 +7,15 @@ import CategoryService from "../category/category.service";
 import { Pagination } from "src/common/utils/pagination.util";
 import StringHelper from "src/common/utils/string-helper.util";
 import { BaseService } from "src/common/abstracts/base.service";
-import type { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
 import type { CreateCategoryDto } from "../category/dto/category.dto";
 import BlogCategoryService from "../blog-category/blog-category.service";
 import type { CreateBlogCategoryDto } from "../blog-category/dto/blog-category.dto";
+
+import type {
+  CreateBlogDto,
+  FilterBlogDto,
+  UpdateBlogDto,
+} from "./dto/blog.dto";
 
 import {
   Injectable,
@@ -69,33 +74,32 @@ class BlogService extends BaseService<BlogEntity> {
   }
 
   async create(authorId: Id, dto: CreateBlogDto) {
-    let { title, categories } = dto;
+    const { title } = dto;
     dto.slug = StringHelper.createSlug(dto.slug ?? title);
 
     await this.validateFieldsForUpsert(dto);
     const blog = await this.createEntity({ ...dto, authorId, categories: [] });
 
-    categories = categories.map((c) => c.trim().toLowerCase());
-    const dbCategories = await this.categoryService.getAllByTitle(categories);
-
-    //* Extract new categories
-    const newCategories: CreateCategoryDto[] = categories
-      .filter((c) => !dbCategories.some((dc) => dc.title === c))
-      .map((c) => ({ title: c }));
-
-    //* Create new categories
-    const createdCategories =
-      await this.categoryService.bulkCreate(newCategories);
-
-    dbCategories.push(...createdCategories);
-
-    //* Create new blog categories
-    const newBlogCategories: CreateBlogCategoryDto[] = dbCategories.map(
-      (c) => ({ blogId: blog.id, categoryId: c.id }),
-    );
-
-    await this.blogCategoryService.bulkCreate(newBlogCategories);
+    //* Create category and blog category relations
+    await this.createBlogCategory(blog, dto);
     return blog;
+  }
+
+  async update(id: Id, dto: UpdateBlogDto) {
+    const { title = undefined } = dto;
+
+    let blog = await this.repository.findOneBy({ id });
+    if (!blog) throw new NotFoundException(BlogMessage.NotFound);
+
+    dto.slug = StringHelper.createSlug(dto.slug ?? title);
+    await this.validateFieldsForUpsert(dto, id);
+
+    //* Create category and blog category relations
+    await this.createBlogCategory(blog, dto);
+    delete dto.categories;
+
+    Object.assign(blog, dto);
+    return this.saveChanges(blog);
   }
 
   async deleteById(id: Id) {
@@ -105,11 +109,14 @@ class BlogService extends BaseService<BlogEntity> {
     return this.repository.remove(blog);
   }
 
-  private async validateFieldsForUpsert(dto: CreateBlogDto, id: Id = 0) {
+  private async validateFieldsForUpsert(
+    dto: CreateBlogDto | UpdateBlogDto,
+    id: Id = 0,
+  ) {
     const { title, slug = undefined } = dto;
 
     const fixedSlug = slug?.toLowerCase();
-    const fixedTitle = title.toLowerCase();
+    const fixedTitle = title?.toLowerCase();
 
     //* Check for duplicate title or slug
     const existing = await this.repository.findOne({
@@ -127,6 +134,37 @@ class BlogService extends BaseService<BlogEntity> {
       if (existing.slug === fixedSlug) {
         throw new ConflictException(BlogMessage.DuplicateSlug);
       }
+    }
+  }
+
+  private async createBlogCategory(
+    blog: BlogEntity,
+    dto: CreateBlogDto | UpdateBlogDto,
+  ) {
+    let { categories } = dto;
+
+    if (categories) {
+      categories = categories.map((c) => c.trim().toLowerCase());
+      const dbCategories = await this.categoryService.getAllByTitle(categories);
+
+      //* Extract new categories
+      const newCategories: CreateCategoryDto[] = categories
+        .filter((c) => !dbCategories.some((dc) => dc.title === c))
+        .map((c) => ({ title: c }));
+
+      //* Create new categories
+      const createdCategories =
+        await this.categoryService.bulkCreate(newCategories);
+
+      dbCategories.push(...createdCategories);
+
+      //* Create new blog categories
+      const newBlogCategories: CreateBlogCategoryDto[] = dbCategories.map(
+        (c) => ({ blogId: blog.id, categoryId: c.id }),
+      );
+
+      await this.blogCategoryService.deleteManyByBlogId(blog.id);
+      await this.blogCategoryService.bulkCreate(newBlogCategories);
     }
   }
 }

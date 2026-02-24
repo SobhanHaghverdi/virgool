@@ -36,15 +36,8 @@ abstract class BaseService<T extends ObjectLiteral> {
 
     const manager = entityManager ?? this.repository.manager;
 
-    const insertResult = await manager
-      .createQueryBuilder()
-      .insert()
-      .into(this.repository.target)
-      .values(dataArray as any[])
-      .returning("*")
-      .execute();
-
-    return insertResult.generatedMaps as T[];
+    const entities = manager.create(this.repository.target, dataArray);
+    return manager.save(entities);
   }
 
   async saveChanges(

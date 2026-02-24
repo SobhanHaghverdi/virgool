@@ -2,12 +2,12 @@ import type { Request } from "express";
 import BlogEntity from "./blog.entity";
 import BlogService from "./blog.service";
 import type { Id } from "src/common/types/entity.type";
-import { CreateBlogDto, FilterBlogDto } from "./dto/blog.dto";
 import ApiAuth from "src/common/decorators/api-auth.decorator";
 import ResponseBuilder from "src/common/utils/response-builder";
 import { BlogMessage, BlogSwaggerMessage } from "./blog.message";
 import ApiMessage from "src/common/decorators/api-message.decorator";
 import type { ApiResponse } from "src/common/types/client-response.type";
+import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
 
 import {
   Req,
@@ -15,6 +15,7 @@ import {
   Body,
   Post,
   Param,
+  Patch,
   Query,
   Delete,
   Controller,
@@ -60,6 +61,17 @@ class BlogController {
     const blog = await this.blogService.create(userId, dto);
 
     return ResponseBuilder.ok(blog, BlogMessage.Created);
+  }
+
+  @ApiAuth()
+  @Patch(":id")
+  @ApiMessage(BlogSwaggerMessage.Update)
+  async update(
+    @Body() dto: UpdateBlogDto,
+    @Param("id", ParseIntPipe) id: Id,
+  ): ApiResponse<BlogEntity> {
+    const blog = await this.blogService.update(id, dto);
+    return ResponseBuilder.ok(blog, BlogMessage.Updated);
   }
 
   @ApiAuth()
