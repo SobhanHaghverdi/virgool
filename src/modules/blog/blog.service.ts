@@ -64,8 +64,17 @@ class BlogService extends BaseService<BlogEntity> {
       .createQueryBuilder("blog")
       .leftJoin("blog.categories", "categories")
       .leftJoin("categories.category", "category")
-      .addSelect(["categories.id", "category.title"])
+      .leftJoin("blog.author", "author")
+      .leftJoin("author.profile", "profile")
+      .addSelect([
+        "categories.id",
+        "category.title",
+        "author.userName",
+        "author.id",
+        "profile.nickName",
+      ])
       .where(conditions, { search, authorId })
+      .loadRelationCountAndMap("blog.likes", "blog.likes")
       .orderBy("blog.id", "DESC")
       .skip(skip)
       .take(limit)
