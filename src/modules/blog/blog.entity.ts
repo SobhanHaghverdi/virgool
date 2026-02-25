@@ -6,6 +6,7 @@ import BlogLikeEntity from "../blog-like/blog-like.entity";
 import { BaseEntity } from "src/common/abstracts/base.entity";
 import BlogCommentEntity from "../blog-comment/blog-comment.entity";
 import BlogBookmarkEntity from "../blog-bookmark/blog-bookmark.entity";
+import BlogCategoryEntity from "../blog-category/blog-category.entity";
 
 import {
   Column,
@@ -19,16 +20,22 @@ import {
 
 @Entity(EntityName.Blog)
 class BlogEntity extends BaseEntity {
-  @Column("varchar", { length: 200, unique: true })
+  @Column("varchar", { length: 150, unique: true })
   title: string;
 
-  @Column("varchar", { length: 400, name: "short_description" })
+  @Column("varchar", { length: 200, unique: true })
+  slug: string;
+
+  @Column("int", { name: "time_for_study" })
+  timeForStudy: number;
+
+  @Column("varchar", { length: 300, name: "short_description" })
   shortDescription: string;
 
   @Column("varchar", { length: 1000 })
   description: string;
 
-  @Column("enum", { enum: BlogStatus })
+  @Column("enum", { enum: BlogStatus, default: BlogStatus.Draft })
   status: BlogStatus;
 
   @Column("varchar", { length: 70, name: "image_name", nullable: true })
@@ -42,6 +49,8 @@ class BlogEntity extends BaseEntity {
 
   @Column("int", { name: "author_id" })
   authorId: Id;
+
+  //#region Relations
 
   @JoinColumn({ name: "author_id" })
   @ManyToOne(() => UserEntity, (user) => user.blogs, { onDelete: "CASCADE" })
@@ -64,6 +73,13 @@ class BlogEntity extends BaseEntity {
     onDelete: "SET NULL",
   })
   comments?: BlogCommentEntity[];
+
+  @OneToMany(() => BlogCategoryEntity, (category) => category.blog, {
+    onDelete: "SET NULL",
+  })
+  categories: BlogCategoryEntity[];
+
+  //#endregion
 }
 
 export default BlogEntity;

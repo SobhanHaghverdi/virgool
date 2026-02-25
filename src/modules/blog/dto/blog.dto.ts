@@ -1,0 +1,75 @@
+import { Transform } from "class-transformer";
+import type { Id } from "src/common/types/entity.type";
+import { PaginationDto } from "src/common/dto/pagination.dto";
+import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
+import {
+  Length,
+  IsArray,
+  IsString,
+  MaxLength,
+  IsNotEmpty,
+  IsOptional,
+  IsNumberString,
+} from "class-validator";
+
+class FilterBlogDto extends PaginationDto {
+  @IsOptional()
+  @IsNumberString()
+  @ApiPropertyOptional({ default: "", type: "integer" })
+  authorId?: Id;
+
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ default: "" })
+  search?: string;
+}
+
+class CreateBlogDto {
+  @IsString()
+  @IsNotEmpty()
+  @Length(3, 150)
+  @Transform(({ value }) => value?.toLowerCase())
+  @ApiProperty({ default: "", minLength: 3, maxLength: 150 })
+  title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(2, 300)
+  @ApiProperty({ default: "", minLength: 2, maxLength: 300 })
+  shortDescription: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(300)
+  @Transform(({ value }) => value?.toLowerCase())
+  @ApiPropertyOptional({ default: "", maxLength: 300 })
+  slug?: string;
+
+  @IsNotEmpty()
+  @IsNumberString()
+  @ApiProperty({ default: "", type: "integer" })
+  timeForStudy: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(2, 1000)
+  @ApiProperty({ default: "", minLength: 2, maxLength: 1000 })
+  description: string;
+
+  @IsOptional()
+  @ApiPropertyOptional({ default: "", format: "binary" })
+  image?: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty({
+    minItems: 1,
+    isArray: true,
+    items: { type: "string", default: "" },
+  })
+  categories: string[];
+}
+
+class UpdateBlogDto extends PartialType(CreateBlogDto) {}
+
+export { CreateBlogDto, UpdateBlogDto, FilterBlogDto };

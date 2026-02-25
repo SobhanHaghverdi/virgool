@@ -11,6 +11,7 @@ import BlogLikeModule from "../blog-like/blog-like.module";
 import BlogCommentModule from "../blog-comment/blog-comment.module";
 import UserProfileModule from "../user-profile/user-profile.module";
 import BlogBookmarkModule from "../blog-bookmark/blog-bookmark.module";
+import BlogCategoryModule from "../blog-category/blog-category.module";
 import { type MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
 
@@ -24,6 +25,7 @@ import OmitEmptyMiddleware from "src/common/middlewares/omit-empty.middleware";
     BlogLikeModule,
     BlogCommentModule,
     UserProfileModule,
+    BlogCategoryModule,
     BlogBookmarkModule,
     TypeOrmModule.forRootAsync({
       useClass: TypeormConfig,

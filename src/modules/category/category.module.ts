@@ -6,6 +6,7 @@ import CategoryService from "./category.service";
 import CategoryController from "./category.controller";
 
 @Module({
+  exports: [CategoryService],
   providers: [CategoryService],
   controllers: [CategoryController],
   imports: [AuthModule, TypeOrmModule.forFeature([CategoryEntity])],

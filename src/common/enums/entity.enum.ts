@@ -7,6 +7,7 @@ enum EntityName {
   BlogComment = "blog_comment",
   UserProfile = "user_profile",
   BlogBookmark = "blog_bookmark",
+  BlogCategory = "blog_category",
 }
 
 export { EntityName };
