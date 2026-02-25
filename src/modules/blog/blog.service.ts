@@ -75,6 +75,7 @@ class BlogService extends BaseService<BlogEntity> {
       ])
       .where(conditions, { search, authorId })
       .loadRelationCountAndMap("blog.likes", "blog.likes")
+      .loadRelationCountAndMap("blog.bookmarks", "blog.bookmarks")
       .orderBy("blog.id", "DESC")
       .skip(skip)
       .take(limit)
