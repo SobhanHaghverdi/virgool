@@ -38,6 +38,10 @@ class BlogService extends BaseService<BlogEntity> {
     this.blogCategoryService = blogCategoryService;
   }
 
+  async checkExistenceById(id: Id) {
+    return this.repository.existsBy({ id });
+  }
+
   async filter(query: FilterBlogDto) {
     let { search = undefined, authorId = undefined } = query;
     let conditions = "";

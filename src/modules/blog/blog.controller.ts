@@ -2,12 +2,19 @@ import type { Request } from "express";
 import BlogEntity from "./blog.entity";
 import BlogService from "./blog.service";
 import type { Id } from "src/common/types/entity.type";
+import BlogLikeEntity from "../blog-like/blog-like.entity";
+import BlogLikeService from "../blog-like/blog-like.service";
 import ApiAuth from "src/common/decorators/api-auth.decorator";
 import ResponseBuilder from "src/common/utils/response-builder";
 import { BlogMessage, BlogSwaggerMessage } from "./blog.message";
 import ApiMessage from "src/common/decorators/api-message.decorator";
 import type { ApiResponse } from "src/common/types/client-response.type";
 import { CreateBlogDto, FilterBlogDto, UpdateBlogDto } from "./dto/blog.dto";
+
+import {
+  BlogLikeMessage,
+  BlogLikeSwaggerMessage,
+} from "../blog-like/blog-like.message";
 
 import {
   Req,
@@ -25,9 +32,11 @@ import {
 @Controller("blogs")
 class BlogController {
   private readonly blogService: BlogService;
+  private readonly blogLikeService: BlogLikeService;
 
-  constructor(blogService: BlogService) {
+  constructor(blogService: BlogService, blogLikeService: BlogLikeService) {
     this.blogService = blogService;
+    this.blogLikeService = blogLikeService;
   }
 
   @Get()
@@ -72,6 +81,22 @@ class BlogController {
   ): ApiResponse<BlogEntity> {
     const blog = await this.blogService.update(id, dto);
     return ResponseBuilder.ok(blog, BlogMessage.Updated);
+  }
+
+  @ApiAuth()
+  @Patch("like/:blogId")
+  @ApiMessage(BlogLikeSwaggerMessage.Like)
+  async likeToggle(
+    @Req() req: Request,
+    @Param("blogId", ParseIntPipe) blogId: Id,
+  ): ApiResponse<BlogLikeEntity> {
+    const userId = req.user!.userId;
+    const blogLike = await this.blogLikeService.likeToggle(userId, blogId);
+
+    return ResponseBuilder.ok(
+      blogLike,
+      blogLike.id ? BlogLikeMessage.Liked : BlogLikeMessage.DisLiked,
+    );
   }
 
   @ApiAuth()
