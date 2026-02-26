@@ -12,6 +12,7 @@ import { BaseService } from "src/common/abstracts/base.service";
 import type {
   CreateBlogCommentDto,
   FilterBlogCommentDto,
+  UpdateBlogCommentDto,
 } from "./dto/blog-comment.dto";
 
 @Injectable()
@@ -63,6 +64,14 @@ class BlogCommentService extends BaseService<BlogCommentEntity> {
     }
 
     return this.createEntity({ ...dto, userId, isVerified: true });
+  }
+
+  async update(id: Id, dto: UpdateBlogCommentDto) {
+    const comment = await this.repository.findOneBy({ id });
+    if (!comment) throw new NotFoundException(BlogCommentMessage.NotFound);
+
+    Object.assign(comment, dto);
+    return this.saveChanges(comment);
   }
 }
 

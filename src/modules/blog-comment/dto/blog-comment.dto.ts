@@ -1,10 +1,12 @@
 import type { Id } from "src/common/types/entity.type";
 import { PaginationDto } from "src/common/dto/pagination.dto";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import ToBoolean from "src/common/decorators/boolean-transformet.decorator";
 
 import {
   Length,
   IsString,
+  IsBoolean,
   IsOptional,
   IsNotEmpty,
   IsNumberString,
@@ -30,4 +32,12 @@ class CreateBlogCommentDto {
   parentId?: Id;
 }
 
-export { FilterBlogCommentDto, CreateBlogCommentDto };
+class UpdateBlogCommentDto {
+  @ToBoolean()
+  @IsBoolean()
+  @IsNotEmpty()
+  @ApiProperty()
+  isVerified: boolean;
+}
+
+export { FilterBlogCommentDto, CreateBlogCommentDto, UpdateBlogCommentDto };
