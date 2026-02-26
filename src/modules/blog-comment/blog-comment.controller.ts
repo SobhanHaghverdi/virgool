@@ -1,12 +1,16 @@
 import type { Request } from "express";
 import BlogCommentEntity from "./blog-comment.entity";
 import BlogCommentService from "./blog-comment.service";
-import { Body, Controller, Post, Req } from "@nestjs/common";
-import { CreateBlogCommentDto } from "./dto/blog-comment.dto";
 import ApiAuth from "src/common/decorators/api-auth.decorator";
 import ResponseBuilder from "src/common/utils/response-builder";
 import ApiMessage from "src/common/decorators/api-message.decorator";
+import { Body, Controller, Get, Post, Query, Req } from "@nestjs/common";
 import type { ApiResponse } from "src/common/types/client-response.type";
+
+import {
+  CreateBlogCommentDto,
+  FilterBlogCommentDto,
+} from "./dto/blog-comment.dto";
 
 import {
   BlogCommentMessage,
@@ -19,6 +23,14 @@ class BlogCommentController {
 
   constructor(blogCommentService: BlogCommentService) {
     this.blogCommentService = blogCommentService;
+  }
+
+  @Get()
+  @ApiAuth()
+  @ApiMessage(BlogCommentSwaggerMessage.Filter)
+  async filter(@Query() query: FilterBlogCommentDto): ApiResponse<object> {
+    const blogComments = await this.blogCommentService.filter(query);
+    return ResponseBuilder.ok(blogComments);
   }
 
   @Post()

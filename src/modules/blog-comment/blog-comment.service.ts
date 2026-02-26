@@ -5,9 +5,14 @@ import { BlogMessage } from "../blog/blog.message";
 import BlogCommentEntity from "./blog-comment.entity";
 import type { Id } from "src/common/types/entity.type";
 import { BlogCommentMessage } from "./blog-comment.message";
+import { Pagination } from "src/common/utils/pagination.util";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { BaseService } from "src/common/abstracts/base.service";
-import type { CreateBlogCommentDto } from "./dto/blog-comment.dto";
+
+import type {
+  CreateBlogCommentDto,
+  FilterBlogCommentDto,
+} from "./dto/blog-comment.dto";
 
 @Injectable()
 class BlogCommentService extends BaseService<BlogCommentEntity> {
@@ -20,6 +25,26 @@ class BlogCommentService extends BaseService<BlogCommentEntity> {
   ) {
     super(blogCommentRepository);
     this.blogService = blogService;
+  }
+
+  async filter(query: FilterBlogCommentDto) {
+    const { limit, pageNumber, skip } = Pagination.solve(query);
+
+    const [comments, totalCount] = await this.repository.findAndCount({
+      skip,
+      take: limit,
+      order: { id: "DESC" },
+      relations: { blog: true, user: { profile: true } },
+      select: {
+        blog: { title: true },
+        user: { userName: true, profile: { nickName: true } },
+      },
+    });
+
+    return {
+      data: comments,
+      pagination: Pagination.generate(limit, pageNumber, totalCount),
+    };
   }
 
   async create(userId: Id, dto: CreateBlogCommentDto) {

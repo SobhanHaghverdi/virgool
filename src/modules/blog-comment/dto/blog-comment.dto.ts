@@ -1,4 +1,5 @@
 import type { Id } from "src/common/types/entity.type";
+import { PaginationDto } from "src/common/dto/pagination.dto";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 import {
@@ -8,6 +9,8 @@ import {
   IsNotEmpty,
   IsNumberString,
 } from "class-validator";
+
+class FilterBlogCommentDto extends PaginationDto {}
 
 class CreateBlogCommentDto {
   @IsString()
@@ -27,4 +30,4 @@ class CreateBlogCommentDto {
   parentId?: Id;
 }
 
-export { CreateBlogCommentDto };
+export { FilterBlogCommentDto, CreateBlogCommentDto };

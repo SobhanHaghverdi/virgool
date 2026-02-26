@@ -5,12 +5,18 @@ enum BlogCommentMessage {
   Created = "نظر با موفقیت ایجاد شد.",
 }
 
-type BlogCommentMessageKey = "Create";
+type BlogCommentMessageKey = "Create" | "Filter";
 
 const BlogCommentSwaggerMessage: Record<
   BlogCommentMessageKey,
   MessageStructure
 > = {
+  Filter: {
+    summary: "Filter blog comments",
+    responses: {
+      success: "Filtered list of blog comments",
+    },
+  },
   Create: {
     summary: "Create blog comment",
     responses: {
