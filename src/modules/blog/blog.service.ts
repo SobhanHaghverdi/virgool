@@ -76,6 +76,13 @@ class BlogService extends BaseService<BlogEntity> {
       .where(conditions, { search, authorId })
       .loadRelationCountAndMap("blog.likes", "blog.likes")
       .loadRelationCountAndMap("blog.bookmarks", "blog.bookmarks")
+      .loadRelationCountAndMap(
+        "blog.comments",
+        "blog.comments",
+        "comments",
+        (qb) =>
+          qb.where("comments.isVerified = :isVerified", { isVerified: true }),
+      )
       .orderBy("blog.id", "DESC")
       .skip(skip)
       .take(limit)
